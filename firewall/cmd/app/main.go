@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"firewall/internal/handler"
-	"firewall/internal/repository"
 	"firewall/internal/service"
+	"firewall/internal/storage"
+	"firewall/internal/storage/driver"
 	"firewall/pkg/config"
 	"log"
 	"net/http"
@@ -21,13 +22,17 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	repository := repository.NewRepository()
-	service := service.NewService(repository)
+	db, err := driver.NewSQLiteDB("test.db")
+	if err != nil {
+		log.Fatalf("Can't connect to Database: %s\n", err)
+	}
+	storage := storage.NewStorage(db)
+	service := service.NewService(storage)
 	handler := handler.NewHandler(service)
 	router := handler.GetRoute()
 
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    config.Koanf.MustString("address"),
 		Handler: router,
 	}
 

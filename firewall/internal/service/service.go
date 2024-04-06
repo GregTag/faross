@@ -1,11 +1,11 @@
 package service
 
-import "firewall/internal/repository"
+import "firewall/internal/storage"
 
 type Service struct {
-	repo repository.Repository
+	storage storage.Storage
 }
 
-func NewService(repo repository.Repository) Service {
-	return Service{repo}
+func NewService(storage storage.Storage) Service {
+	return Service{storage}
 }
