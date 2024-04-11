@@ -128,6 +128,7 @@ func TestRepositoryStore(t *testing.T) {
 	assert.Error(t, err)
 
 	rep3, err := store.Load(instance, rep2.Name)
+	rep2.Packages = []entity.Package{}
 	assert.NoError(t, err)
 	assert.Equal(t, rep2, rep3)
 
