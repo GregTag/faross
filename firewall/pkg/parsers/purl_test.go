@@ -1,14 +1,14 @@
-package purlidentifier_test
+package parsers_test
 
 import (
-	"firewall/pkg/purlidentifier"
+	"firewall/pkg/parsers"
 	"testing"
 
 	"github.com/package-url/packageurl-go"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestFromCoordinates(t *testing.T) {
+func TestIdentifyPurl(t *testing.T) {
 	// Maven test case
 	mavenCoordinates := map[string]string{
 		"format":     "maven",
@@ -22,7 +22,7 @@ func TestFromCoordinates(t *testing.T) {
 		Name:      "my-artifact",
 		Version:   "1.0.0",
 	}
-	purl, err := purlidentifier.FromCoordinates(mavenCoordinates)
+	purl, err := parsers.IdentifyPurl(mavenCoordinates)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedMavenPURL, purl)
 
@@ -37,7 +37,7 @@ func TestFromCoordinates(t *testing.T) {
 		Name:    "my-package",
 		Version: "1.0.0",
 	}
-	purl, err = purlidentifier.FromCoordinates(npmCoordinates)
+	purl, err = parsers.IdentifyPurl(npmCoordinates)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedNpmPURL, purl)
 
@@ -52,7 +52,7 @@ func TestFromCoordinates(t *testing.T) {
 		Name:    "my-package",
 		Version: "1.0.0",
 	}
-	purl, err = purlidentifier.FromCoordinates(pypiCoordinates)
+	purl, err = parsers.IdentifyPurl(pypiCoordinates)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedPypiPURL, purl)
 
@@ -68,7 +68,7 @@ func TestFromCoordinates(t *testing.T) {
 		Name:      "my-repo",
 		Version:   "v1.0.0",
 	}
-	purl, err = purlidentifier.FromCoordinates(golangCoordinates)
+	purl, err = parsers.IdentifyPurl(golangCoordinates)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedGolangPURL, purl)
 }

@@ -126,4 +126,11 @@ func TestRepositoryStore(t *testing.T) {
 
 	_, err = store.GetById(100)
 	assert.Error(t, err)
+
+	rep3, err := store.Load(instance, rep2.Name)
+	assert.NoError(t, err)
+	assert.Equal(t, rep2, rep3)
+
+	_, err = store.Load(instance, "no-name")
+	assert.Error(t, err)
 }

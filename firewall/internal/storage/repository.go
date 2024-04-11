@@ -38,3 +38,26 @@ func (r *RepositoryStore) GetById(id uint) (*entity.Repository, error) {
 	err := r.db.Take(&entry).Error
 	return &entry, err
 }
+
+func (r *RepositoryStore) Load(instanceId, name string) (*entity.Repository, error) {
+	var entry entity.Repository
+	err := r.db.Where("instance_id = ?", instanceId).Where("name = ?", name).Preload("Packages").Take(&entry).Error
+	return &entry, err
+}
+
+func (r *RepositoryStore) GetUnquarantined(instanceId, name string, since time.Time) (*[]entity.UnquarantineEntry, error) {
+	var entries []entity.UnquarantineEntry
+	err := r.db.Model(&entity.Repository{InstanceID: instanceId, RepositoryDTO: entity.RepositoryDTO{Name: name}}).
+		Association("UnquarantineList").
+		Find(&entries, "created_at >= ?", since)
+	return &entries, err
+}
+
+func (r *RepositoryStore) AppendPackages(instanceId, name string, packages []*entity.Package) error {
+	return r.db.
+		Model(&entity.Repository{}).
+		Where("instance_id = ?", instanceId).
+		Where("name = ?", name).
+		Association("Packages").
+		Append(packages)
+}

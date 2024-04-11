@@ -14,7 +14,13 @@ func NewSQLiteDB(path string) (*gorm.DB, error) {
 	}
 
 	err = db.AutoMigrate(
+		&entity.UnquarantineEntry{},
 		&entity.Repository{},
+		&entity.Package{},
 	)
-	return db, err
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
