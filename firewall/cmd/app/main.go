@@ -7,6 +7,7 @@ import (
 	"firewall/internal/storage"
 	"firewall/internal/storage/driver"
 	"firewall/pkg/config"
+	"flag"
 	"log"
 	"net/http"
 	"os/signal"
@@ -16,7 +17,9 @@ import (
 
 func main() {
 	// Load config
-	config.Load()
+	config_path := flag.String("config", "config/config.yaml", "Path to configuration file")
+	flag.Parse()
+	config.Load(*config_path)
 
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)

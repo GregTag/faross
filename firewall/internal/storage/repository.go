@@ -33,6 +33,12 @@ func (r *RepositoryStore) GetByInstanceIdAndSince(instanceId string, since time.
 	return &entries, err
 }
 
+func (r *RepositoryStore) GetByInstanceAndName(instance, name string) (*entity.Repository, error) {
+	var entry entity.Repository
+	err := r.db.Where("instance_id = ?", instance).Where("name = ?", name).Take(&entry).Error
+	return &entry, err
+}
+
 func (r *RepositoryStore) GetById(id uint) (*entity.Repository, error) {
 	entry := entity.Repository{Model: gorm.Model{ID: id}}
 	err := r.db.Take(&entry).Error
@@ -45,19 +51,18 @@ func (r *RepositoryStore) Load(instanceId, name string) (*entity.Repository, err
 	return &entry, err
 }
 
-func (r *RepositoryStore) GetUnquarantined(instanceId, name string, since time.Time) (*[]entity.UnquarantineEntry, error) {
-	var entries []entity.UnquarantineEntry
-	err := r.db.Model(&entity.Repository{InstanceID: instanceId, RepositoryDTO: entity.RepositoryDTO{Name: name}}).
-		Association("UnquarantineList").
-		Find(&entries, "created_at >= ?", since)
-	return &entries, err
+func (r *RepositoryStore) GetUnquarantined(id uint, since time.Time) ([]*entity.Package, error) {
+	var entries []*entity.Package
+	err := r.db.Model(&entity.Repository{Model: gorm.Model{ID: id}}).
+		Where("updated_at >= ?", since).
+		Where("state = ?", entity.Unquarantined).
+		Association("Packages").
+		Find(&entries)
+	return entries, err
 }
 
-func (r *RepositoryStore) AppendPackages(instanceId, name string, packages []*entity.Package) error {
-	return r.db.
-		Model(&entity.Repository{}).
-		Where("instance_id = ?", instanceId).
-		Where("name = ?", name).
+func (r *RepositoryStore) AppendPackages(id uint, packages []*entity.Package) error {
+	return r.db.Model(&entity.Repository{Model: gorm.Model{ID: id}}).
 		Association("Packages").
-		Append(packages)
+		Append(&packages)
 }

@@ -9,6 +9,7 @@ import (
 	"firewall/pkg/parsers"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"sync"
 )
@@ -39,11 +40,11 @@ func (s *Service) requestEvaluatePurl(purl string) (*entity.Package, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
-	fmt.Println("Scanned response for ", purl, ": ", string(body))
+	log.Println("Scanned response for ", purl, ": ", string(body))
 
 	var response struct {
 		Decision   string  `json:"decision"`
@@ -51,7 +52,7 @@ func (s *Service) requestEvaluatePurl(purl string) (*entity.Package, error) {
 	}
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -63,7 +64,7 @@ func (s *Service) requestEvaluatePurl(purl string) (*entity.Package, error) {
 		state = entity.Healthy
 	default:
 		err = fmt.Errorf("invalid decision")
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -162,9 +163,15 @@ func (s *Service) runEvals(components []EvalDataRequest) ([]runResult, error) {
 }
 
 func (s *Service) EvalRequest(instance, name string, components []EvalDataRequest) ([]map[string]any, error) {
+	repos, err := s.storage.Repository.GetByInstanceAndName(instance, name)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
 	runResults, err := s.runEvals(components)
 	if err != nil {
-		fmt.Println("Errors in evaluation: ", err)
+		log.Println("Errors in evaluation: ", err)
 		// No break
 	}
 
@@ -179,9 +186,9 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 		pkgs[res.index] = res.pkg
 	}
 
-	err = s.storage.Repository.AppendPackages(instance, name, pkgs)
+	err = s.storage.Repository.AppendPackages(repos.ID, pkgs)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -189,12 +196,28 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 }
 
 func (s *Service) Unquarantine(purl string) error {
-	pkg, err := s.storage.Package.TryGetByPurl(purl)
+	err := s.storage.Package.Unquarantine(purl)
 	if err != nil {
-		return err
+		log.Println("Error in unqarantine: ", err)
 	}
-	if pkg == nil || pkg.State != entity.Quarantined {
-		return fmt.Errorf("purl %s is not in quarantine", purl)
+	return err
+}
+
+func (s *Service) GetPackage(purl string) (*entity.Package, error) {
+	return s.storage.Package.TryGetByPurl(purl)
+}
+
+func (s *Service) GetAll() ([]map[string]any, error) {
+	pkgs, err := s.storage.Package.GetAll()
+	if err != nil {
+		return nil, err
 	}
-	return s.storage.Package.Unquarantine(pkg)
+	response := make([]map[string]any, 0, len(pkgs))
+	for _, pkg := range pkgs {
+		response = append(response, map[string]any{
+			"purl":  pkg.Purl,
+			"state": pkg.State,
+		})
+	}
+	return response, nil
 }

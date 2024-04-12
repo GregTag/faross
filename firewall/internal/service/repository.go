@@ -113,13 +113,18 @@ func (s *Service) GetUnquarantined(instance, name, sinceStr string) (*[]string, 
 		return nil, err
 	}
 
-	entries, err := s.storage.Repository.GetUnquarantined(instance, name, *since)
+	repos, err := s.storage.Repository.GetByInstanceAndName(instance, name)
 	if err != nil {
 		return nil, err
 	}
 
-	list := make([]string, 0, len(*entries))
-	for _, entry := range *entries {
+	entries, err := s.storage.Repository.GetUnquarantined(repos.ID, *since)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]string, 0, len(entries))
+	for _, entry := range entries {
 		list = append(list, entry.Pathname)
 	}
 	return &list, nil

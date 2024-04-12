@@ -3,8 +3,10 @@ package storage
 import (
 	"errors"
 	"firewall/internal/entity"
+	"fmt"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type PackageStore struct {
@@ -16,7 +18,10 @@ func NewPackageStore(db *gorm.DB) PackageStore {
 }
 
 func (s *PackageStore) Save(pkg *entity.Package) error {
-	return s.db.Save(pkg).Error
+	return s.db.Model(&entity.Package{}).Clauses(clause.OnConflict{
+		Columns:   []clause.Column{{Name: "purl"}},
+		UpdateAll: true,
+	}).Create(pkg).Error
 }
 
 func (s *PackageStore) TryGetByPurl(purl string) (*entity.Package, error) {
@@ -28,10 +33,22 @@ func (s *PackageStore) TryGetByPurl(purl string) (*entity.Package, error) {
 	return &entry, err
 }
 
-func (s *PackageStore) Unquarantine(pkg *entity.Package) error {
-	pkg.State = entity.Unquarantined
-	return s.db.Transaction(func(tx *gorm.DB) error {
-		return tx.Save(pkg).Error
-		// TODO: insert UnquarantineEntry to each repository for this package
-	})
+func (s *PackageStore) Unquarantine(purl string) error {
+	result := s.db.Model(&entity.Package{}).
+		Where("purl = ?", purl).
+		Where("state = ?", entity.Quarantined).
+		Update("state", entity.Unquarantined)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("no package unquarantined")
+	}
+	return nil
+}
+
+func (s *PackageStore) GetAll() ([]entity.Package, error) {
+	var entries []entity.Package
+	err := s.db.Find(&entries).Error
+	return entries, err
 }

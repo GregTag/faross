@@ -10,8 +10,8 @@ import (
 
 var Koanf = koanf.New(".")
 
-func Load() {
-	err := Koanf.Load(file.Provider("config/config.yaml"), yaml.Parser())
+func Load(path string) {
+	err := Koanf.Load(file.Provider(path), yaml.Parser())
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
 	}

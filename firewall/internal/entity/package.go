@@ -21,8 +21,3 @@ type Package struct {
 	FinalScore float32
 	Report     string
 }
-
-type UnquarantineEntry struct {
-	gorm.Model
-	Pathname string
-}

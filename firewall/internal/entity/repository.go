@@ -9,8 +9,7 @@ type Repository struct {
 	gorm.Model
 	InstanceID string `gorm:"uniqueIndex:instance_name"`
 	RepositoryDTO
-	Packages         []Package           `gorm:"many2many:repository_package;"`
-	UnquarantineList []UnquarantineEntry `gorm:"foreignKey:ID"`
+	Packages []Package `gorm:"many2many:repository_package;"`
 }
 
 type RepositoryDTO struct {
