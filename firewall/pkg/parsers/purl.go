@@ -1,4 +1,4 @@
-package purlidentifier
+package parsers
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 
 var trimSlashesRegex = regexp.MustCompile(`(^/+)|(/+$)`)
 
-func FromCoordinates(coordinates map[string]string) (*packageurl.PackageURL, error) {
+func IdentifyPurl(coordinates map[string]string) (*packageurl.PackageURL, error) {
 	format, ok := coordinates["format"]
 	if !ok {
 		return nil, fmt.Errorf("no format")
@@ -27,7 +27,7 @@ func FromCoordinates(coordinates map[string]string) (*packageurl.PackageURL, err
 	case "golang":
 		builder.resolveGolang(coordinates)
 	default:
-		builder.errs = append(builder.errs, fmt.Errorf("unsupported format"))
+		builder.errs = append(builder.errs, fmt.Errorf("unsupported format %s", format))
 	}
 	if len(builder.errs) != 0 {
 		return nil, errors.Join(builder.errs...)
@@ -94,6 +94,6 @@ func (b *builder) resolvePypi(coordinates map[string]string) {
 
 func (b *builder) resolveGolang(coordinates map[string]string) {
 	b.purl.Type = "golang"
-	b.purl.Version = b.get(&coordinates, "version")
+	b.purl.Version = coordinates["version"]
 	b.resolveNameAndNamespace(b.get(&coordinates, "name"))
 }
