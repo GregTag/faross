@@ -19,6 +19,14 @@ Usage of ./bin/firewall:
         Path to configuration file (default "config/config.yaml")
 ```
 
+### Running with PostgreSQL
+Передать учетные данные от postgres можно через конфиг. Другой способ - через переменные окружения. Пример: 
+```bash
+$ docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres
+$ export FIREWALL_dbCreds="user=postgres password=postgres dbname=postgres host=localhost port=5432 sslmode=disable" 
+$ go run cmd/app/main.go
+```
+
 ## APIs
 * `/nexus/*` - API для общения с Nexus Repository
 * `/api/*` - API для пользовательского взаимодействия с firewall

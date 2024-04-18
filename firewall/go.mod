@@ -32,6 +32,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/knadh/koanf/maps v0.1.1 // indirect
 	github.com/knadh/koanf/parsers/yaml v0.1.0 // indirect
+	github.com/knadh/koanf/providers/env v0.1.0
 	github.com/knadh/koanf/providers/file v0.1.0 // indirect
 	github.com/knadh/koanf/v2 v2.1.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
