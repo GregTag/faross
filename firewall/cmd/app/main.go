@@ -25,7 +25,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	db, err := driver.NewSQLiteDB("test.db")
+	db, err := driver.NewDB()
 	if err != nil {
 		log.Fatalf("Can't connect to Database: %s\n", err)
 	}

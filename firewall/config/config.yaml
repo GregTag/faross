@@ -1,3 +1,5 @@
 address: "0.0.0.0:5002"
 quarantineMessage: "This package is blocked by Faross system. Contact the Information Security Department for more details"
 gatherLaunch: "http://localhost:5001/scan"
+dbDriver: "postgresql"
+dbCreds: "user=postgres password=postgres dbname=postgres host=localhost port=5432 sslmode=disable"
