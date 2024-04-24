@@ -1,17 +1,15 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"firewall/internal/entity"
-	"firewall/pkg/config"
 	"firewall/pkg/parsers"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"sync"
+
+	"github.com/package-url/packageurl-go"
 )
 
 type EvalDataRequest struct {
@@ -20,44 +18,36 @@ type EvalDataRequest struct {
 	Hash     string `json:"hash"`
 }
 
-func (s *Service) requestEvaluatePurl(purl string) (*entity.Package, error) {
-	pkg, err := s.storage.Package.TryGetByPurl(purl)
+// Will be in gather-launch
+type response struct {
+	Decision   string  `json:"decision"`
+	FinalScore float32 `json:"final_score"`
+}
+
+// Will be in gather-launch
+func runGatherLaunch(_ *packageurl.PackageURL) (response, error) {
+	return response{
+		Decision:   "quarantine",
+		FinalScore: 6.0,
+	}, nil
+}
+
+func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Package, error) {
+	resp, err := runGatherLaunch(purl)
 	if err != nil {
 		return nil, err
 	}
-	if pkg != nil {
-		return pkg, nil
-	}
 
-	scan_url := config.Koanf.String("gatherLaunch")
-
-	resp, err := http.Post(scan_url, "text/plain", bytes.NewBufferString(purl))
+	respBytes, err := json.Marshal(resp)
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
-	defer resp.Body.Close()
+	respStr := string(respBytes)
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-
-	log.Println("Scanned response for ", purl, ": ", string(body))
-
-	var response struct {
-		Decision   string  `json:"decision"`
-		FinalScore float32 `json:"final_score"`
-	}
-	err = json.Unmarshal(body, &response)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+	log.Println("Scanned response for ", purl, ": ", respStr)
 
 	var state entity.State
-	switch response.Decision {
+	switch resp.Decision {
 	case "quarantine":
 		state = entity.Quarantined
 	case "healthy":
@@ -69,17 +59,22 @@ func (s *Service) requestEvaluatePurl(purl string) (*entity.Package, error) {
 	}
 
 	result := entity.Package{
-		Purl:       purl,
+		Purl:       purl.ToString(),
 		State:      state,
-		FinalScore: response.FinalScore,
-		Report:     string(body),
+		FinalScore: resp.FinalScore,
+		Report:     respStr,
 	}
 
 	return &result, nil
 }
 
-func (s *Service) EvaluatePurl(purl string) (*entity.Package, error) {
-	pkg, err := s.requestEvaluatePurl(purl)
+func (s *Service) EvaluatePurl(purlStr string) (*entity.Package, error) {
+	purl, err := packageurl.FromString(purlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	pkg, err := s.requestEvaluatePurl(&purl)
 	if err != nil {
 		return nil, err
 	}
@@ -93,11 +88,10 @@ func (s *Service) EvaluatePurl(purl string) (*entity.Package, error) {
 }
 
 func (s *Service) EvaluatePathname(format, pathname string) (*entity.Package, error) {
-	purlStruct, err := parsers.PathnameToPurl(format, pathname)
+	purl, err := parsers.PathnameToPurl(format, pathname)
 	if err != nil {
 		return nil, err
 	}
-	purl := purlStruct.ToString()
 
 	pkg, err := s.requestEvaluatePurl(purl)
 	if err != nil {
