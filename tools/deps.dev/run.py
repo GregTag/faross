@@ -7,21 +7,21 @@ def getResponse(url: str) -> None:
     response = requests.get(url)
 
     if response.status_code == 200:
-        sys.stderr.write(f"Запрос к {url} успешно выполнен!")
-        print(response.json())
+        print(response.text)
     else:
-        sys.stderr.write(f"Произошла ошибка, {response.status_code}\n")
-        sys.stderr.write(response.text)
+        sys.stderr.write(f"An error occured while fetching data from api.deps.dev\n"
+                         f"Response status code: {response.status_code}\nError:\n{response.text}\n")
         sys.exit(1)
 
 
-purl = sys.argv[1]
-percent_encoded_purl = quote(purl, safe='')
+if __name__ == "__main__":
+    purl = sys.argv[1]
+    percent_encoded_purl = quote(purl, safe='')
 
-# Только метод PurlLookup поддерживает запрос через Purl
-base_purl_lookup_url = "https://api.deps.dev/v3alpha/purl/"
-# TODO: JSON не соответсвует образцу
-# TODO: используется alpha версия API
+    # Только метод PurlLookup поддерживает запрос через Purl
+    base_purl_lookup_url = "https://api.deps.dev/v3alpha/purl/"
+    # TODO: JSON не соответсвует образцу
+    # TODO: используется alpha версия API
 
-url = base_purl_lookup_url + percent_encoded_purl
-getResponse(url)
+    url = base_purl_lookup_url + percent_encoded_purl
+    getResponse(url)
