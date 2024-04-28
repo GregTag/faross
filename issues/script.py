@@ -24,10 +24,11 @@ def get_score(owner, repo):
 		return 0
 
 
+TOOL_NAME = "Issues"
 DESC = "Scores issue splash based on increase in issue number over the last month"
 
 parser = argparse.ArgumentParser(
-                    prog='Issues tool',
+                    prog=TOOL_NAME + ' tool',
                     description=DESC)
 parser.add_argument('owner')  # positional argument
 parser.add_argument('repo')  # positional argument
@@ -36,7 +37,7 @@ args = parser.parse_args()
 score = get_score(args.owner, args.repo)
 
 result = {
-	"Popularity": {
+	TOOL_NAME: {
 		"score": score,
 		"risk": "medium",
 		"desc": DESC
