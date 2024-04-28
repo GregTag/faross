@@ -25,7 +25,7 @@ TEMP_FILE='temp.txt'
 issues_count=0
 page=1
 while : ; do
-    curl "https://api.github.com/repos/$OWNER/$REPO/issues?since=$FROM_DATE&page=$page" 2> /dev/null > $TEMP_FILE
+    curl "https://api.github.com/repos/$OWNER/$REPO/issues?since=$FROM_DATE&page=$page&state=all" 2> /dev/null > $TEMP_FILE
     received=$(jq length $TEMP_FILE)
     real_issues=$(jq 'map(select(.pull_request | not)) | length' $TEMP_FILE)
     ((issues_count+=real_issues))
