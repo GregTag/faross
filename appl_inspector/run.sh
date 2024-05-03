@@ -23,8 +23,9 @@ jq '.metaData.uniqueTags.[]' $RESULT_FILE > $TAGS_FILE
 score=$(python3 scorer.py)
 rm $TAGS_FILE
 
+name="Unsafe operations"
 desc="Uses regular expressions to identify potentially dangerous constructs in the code, e.g. network connection or dynamic execution"
-echo "{\"Unsafe_operations\": {\"score\": $score, \"risk\": \"medium\", \"desc\": \"$desc\"}}"
+echo "{\"$name\": {\"score\": $score, \"risk\": \"medium\", \"desc\": \"$desc\"}}"
 
 # ------------------ Clean ------------------
 

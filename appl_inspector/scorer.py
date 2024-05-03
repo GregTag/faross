@@ -45,4 +45,4 @@ with open('tags.txt', 'r') as f:
         if risk != None:
             project_penalty += penalties[risk]
 
-print((max_penalty - project_penalty) * 10 / 25)
+print((max_penalty - project_penalty) * 10 / max_penalty)
