@@ -15,7 +15,7 @@ if [ ! -d $1 ]; then
 fi
 
 RESULT_FILE="data.json"
-appinspector analyze -o $RESULT_FILE -f json -s $1 > /dev/null || exit "Error occurred while analyzing"
+appinspector analyze -o $RESULT_FILE -f json -s $1 > /dev/null || error_exit "Error occurred while analyzing"
 
 # ------------------ Unsafe_operations ------------------
 TAGS_FILE="tags.txt"  # scorer.py uses tags.txt
