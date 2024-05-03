@@ -1,4 +1,4 @@
-package main
+package gatherlaunch
 
 import (
 	"log"
@@ -6,25 +6,23 @@ import (
 	"sync"
 	"text/template"
 
-	"gather-launch/util"
+	"faross/gatherlaunch/util"
 )
 
-func cleanOutputFile(outputFileName string) error {
-	file, err := os.Create(outputFileName)
-	defer file.Close()
-	if err != nil {
-		log.Fatalf("Fail in creation of file %s: %v\n", outputFileName, err)
-		return err
+func PullImages(images map[string]string) {
+	var wg sync.WaitGroup
+	for toolName, toolImage := range images {
+		wg.Add(1)
+		go func(toolName string, toolImage string) {
+			defer wg.Done()
+			util.PullDockerImage(toolImage)
+		}(toolName, toolImage)
 	}
-	return nil
+	wg.Wait()
 }
 
-func main() {
-	if len(os.Args) < 2 {
-		log.Fatalln("Please, provide the program with package url")
-	}
-
-	pkgInfo, err := util.ParsePurl(os.Args[1])
+func Scan(purl string) {
+	pkgInfo, err := util.ParsePurl(purl)
 	if err != nil {
 		log.Fatalln("Failed to parse purl")
 	}
@@ -33,6 +31,8 @@ func main() {
 	if err != nil {
 		log.Fatalln("Failed to select tools")
 	}
+
+	PullImages(toolsImageMapping)
 
 	ResultMapping := make(map[string]util.ToolResponse, len(toolsImageMapping))
 	var wg sync.WaitGroup
