@@ -1,19 +1,21 @@
 # Error handling
+echoerr() { echo "$@" 1>&2; }
+
 error_exit()
 {
-    echo "$1"
+    echoerr "$1"
     exit 1
 }
 
 if [ -z "$1" ]; then 
-    error_exit "Pass path too directory to analyze as a first parameter"
+    error_exit "Pass path to directory to analyze as a first parameter"
 fi
 if [ ! -d $1 ]; then
     error_exit "Source directory does not exist"
 fi
 
 RESULT_FILE="data.json"
-appinspector analyze -o $RESULT_FILE -f json -s $1 > /dev/null
+appinspector analyze -o $RESULT_FILE -f json -s $1 > /dev/null || exit "Error occurred while analyzing"
 
 # ------------------ Unsafe_operations ------------------
 TAGS_FILE="tags.txt"  # scorer.py uses tags.txt
