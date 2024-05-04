@@ -32,8 +32,6 @@ func Scan(purl string) {
 		log.Fatalln("Failed to select tools")
 	}
 
-	PullImages(toolsImageMapping)
-
 	ResultMapping := make(map[string]util.ToolResponse, len(toolsImageMapping))
 	var wg sync.WaitGroup
 	for toolName, toolImage := range toolsImageMapping {

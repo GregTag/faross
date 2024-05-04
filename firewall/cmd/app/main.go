@@ -13,16 +13,9 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	"faross/gatherlaunch"
-	"os"
 )
 
 func main() {
-	// TODO: delete this later, example of imported function usage
-	gatherlaunch.Scan("pkg:npm/foobar@12.3.1")
-	os.Exit(0)
-
 	// Load config
 	config_path := flag.String("config", "config/config.yaml", "Path to configuration file")
 	flag.Parse()
