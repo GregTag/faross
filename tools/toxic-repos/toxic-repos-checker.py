@@ -66,10 +66,19 @@ def normalize_item(item, name):
     return normalized_item
 
 
+def rename_package(name):
+    if name.startswith('pkg:'):
+        start_index = name.find('/') + 1
+        end_index = name.rfind('@')
+        return name[start_index:end_index]
+    return name
+
+
 if __name__ == '__main__':
     url = 'https://raw.githubusercontent.com/toxic-repos/toxic-repos/main/data/json/toxic-repos.json'
     filename = 'toxic-repos.json'
     name = sys.argv[1]
+    name = rename_package(name)
 
     data = get_json(url, filename)
     item = find_item(data, name)
