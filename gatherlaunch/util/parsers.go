@@ -8,21 +8,15 @@ import (
 	"github.com/package-url/packageurl-go"
 )
 
-func ParsePurl(purlRaw string) (PackageInfo, error) {
-	purl, err := packageurl.FromString(purlRaw)
-	if err != nil {
-		log.Printf("Failed to parse the requested package url: %s\n", purlRaw)
-		return PackageInfo{}, err
-	}
-	pkgInfo := PackageInfo{
+func ParsePurl(purl packageurl.PackageURL) PackageInfo {
+	return PackageInfo{
 		Registry:  purl.Type,
 		Name:      purl.Name,
 		Type:      purl.Type,
 		Version:   purl.Version,
 		Namespace: purl.Namespace,
-		Purl:      purlRaw,
+		Purl:      purl.ToString(),
 	}
-	return pkgInfo, nil
 }
 
 type Parser interface {
@@ -54,6 +48,6 @@ func GetParser(toolName string) (Parser, error) {
 	case "toxic-repos":
 		return DefaultParser{}, nil
 	default:
-		return nil, fmt.Errorf("Unexpected tool name: %s", toolName)
+		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
 }

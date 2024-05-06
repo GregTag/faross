@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"faross/gatherlaunch"
 	"firewall/internal/entity"
 	"firewall/pkg/parsers"
-	"fmt"
 	"log"
 	"sync"
 
@@ -18,22 +18,8 @@ type EvalDataRequest struct {
 	Hash     string `json:"hash"`
 }
 
-// Will be in gather-launch
-type response struct {
-	Decision   string  `json:"decision"`
-	FinalScore float32 `json:"final_score"`
-}
-
-// Will be in gather-launch
-func runGatherLaunch(_ *packageurl.PackageURL) (response, error) {
-	return response{
-		Decision:   "quarantine",
-		FinalScore: 6.0,
-	}, nil
-}
-
 func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Package, error) {
-	resp, err := runGatherLaunch(purl)
+	resp, err := gatherlaunch.Scan(*purl)
 	if err != nil {
 		return nil, err
 	}
@@ -46,22 +32,28 @@ func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Pack
 
 	log.Println("Scanned response for ", purl, ": ", respStr)
 
-	var state entity.State
-	switch resp.Decision {
-	case "quarantine":
-		state = entity.Quarantined
-	case "healthy":
-		state = entity.Healthy
-	default:
-		err = fmt.Errorf("invalid decision")
-		log.Println(err)
-		return nil, err
+	// TODO: get decision from report
+	state := entity.Quarantined
+	// switch resp.Decision {
+	// case "quarantine":
+	// 	state = entity.Quarantined
+	// case "healthy":
+	// 	state = entity.Healthy
+	// default:
+	// 	err = fmt.Errorf("invalid decision")
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
+
+	final_score, ok := resp["final_score"].(float32)
+	if !ok {
+		return nil, errors.New("no final score in report")
 	}
 
 	result := entity.Package{
 		Purl:       purl.ToString(),
 		State:      state,
-		FinalScore: resp.FinalScore,
+		FinalScore: final_score,
 		Report:     respStr,
 	}
 

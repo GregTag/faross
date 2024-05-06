@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"faross/gatherlaunch"
 	"firewall/internal/handler"
 	"firewall/internal/service"
 	"firewall/internal/storage"
@@ -16,14 +17,20 @@ import (
 )
 
 func main() {
-	// Load config
-	config_path := flag.String("config", "config/config.yaml", "Path to configuration file")
-	flag.Parse()
-	config.Load(*config_path)
-
 	// Create context that listens for the interrupt signal from the OS.
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	// Load config
+	config_path := flag.String("config", "config.yaml", "Path to configuration file")
+	flag.Parse()
+	config.Load(*config_path)
+
+	// Initialize GatherLaunch
+	err := gatherlaunch.InitGatherLaunch(config.Koanf.MustString("instrumentsPath"))
+	if err != nil {
+		log.Fatalf("Can't initialize gather launch: %s\n", err)
+	}
 
 	db, err := driver.NewDB()
 	if err != nil {
