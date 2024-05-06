@@ -13,11 +13,12 @@ import (
 )
 
 type PackageInfo struct {
-	Registry string
-	Name     string
-	Type     string
-	Version  string
-	Purl     string
+	Registry  string
+	Name      string
+	Type      string
+	Version   string
+	Purl      string
+	Namespace string
 }
 
 type ContainerOutput struct {

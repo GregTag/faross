@@ -15,11 +15,12 @@ func ParsePurl(purlRaw string) (PackageInfo, error) {
 		return PackageInfo{}, err
 	}
 	pkgInfo := PackageInfo{
-		Registry: purl.Type,
-		Name:     purl.Name,
-		Type:     purl.Type,
-		Version:  purl.Version,
-		Purl:     purlRaw,
+		Registry:  purl.Type,
+		Name:      purl.Name,
+		Type:      purl.Type,
+		Version:   purl.Version,
+		Namespace: purl.Namespace,
+		Purl:      purlRaw,
 	}
 	return pkgInfo, nil
 }
