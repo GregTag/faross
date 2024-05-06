@@ -1,13 +1,26 @@
 package gatherlaunch
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"sync"
 	"text/template"
 
 	"faross/gatherlaunch/util"
+
+	"github.com/package-url/packageurl-go"
 )
+
+func InitGatherLaunch(instrumentsPath string) error {
+	err := util.InitTools(instrumentsPath)
+	if err != nil {
+		return err
+	}
+	// Get list of all images
+	// err = PullImages(...)
+	return nil
+}
 
 func PullImages(images map[string]string) {
 	var wg sync.WaitGroup
@@ -21,15 +34,12 @@ func PullImages(images map[string]string) {
 	wg.Wait()
 }
 
-func Scan(purl string) {
-	pkgInfo, err := util.ParsePurl(purl)
-	if err != nil {
-		log.Fatalln("Failed to parse purl")
-	}
+func Scan(purl packageurl.PackageURL) (map[string]any, error) {
+	pkgInfo := util.ParsePurl(purl)
 
 	toolsImageMapping, err := util.SelectTools(pkgInfo.Type)
 	if err != nil {
-		log.Fatalln("Failed to select tools")
+		return nil, fmt.Errorf("failed to select tools: %s", err)
 	}
 
 	ResultMapping := make(map[string]util.ToolResponse, len(toolsImageMapping))
@@ -72,8 +82,13 @@ func Scan(purl string) {
 
 	tmpl, err := template.New("result").Parse(util.OutputTemplate)
 	if err != nil {
-		log.Fatalf("Failed to parse output template:\n%s\n", err.Error())
+		return nil, fmt.Errorf("failed to parse output template: %s", err)
 	}
 	// TODO: replace os.Stdout with file if needed
 	tmpl.Execute(os.Stdout, containerOutputs)
+
+	// TODO: replace placeholder with dedcision-making report
+	return map[string]any{
+		"final_score": 6.0,
+	}, nil
 }
