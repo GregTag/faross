@@ -63,7 +63,7 @@ func TestPackageStore(t *testing.T) {
 	assert.NoError(t, s.Repository.Save(&rep1))
 	assert.NoError(t, s.Repository.Save(&rep2))
 
-	pkgs := []*entity.Package{&pkg2, &pkg3}
+	pkgs := []entity.Package{pkg2, pkg3}
 	assert.NoError(t, s.Repository.AppendPackages(rep1.ID, pkgs))
 	assert.NoError(t, s.Repository.AppendPackages(rep2.ID, pkgs))
 

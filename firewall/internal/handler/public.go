@@ -21,42 +21,50 @@ func (h *Handler) handleGetAll(ctx *gin.Context) {
 	resp, err := h.service.GetAll()
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.JSON(http.StatusOK, resp)
 }
 
 func (h *Handler) handleGetStatus(ctx *gin.Context) {
 	var body request
-	ctx.BindJSON(&body)
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
 
 	pkg, err := h.service.GetPackage(body.Purl)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
-	}
-	if pkg != nil {
-		ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
-	} else {
+	} else if pkg == nil {
 		ctx.AbortWithStatus(http.StatusNotFound)
+	} else {
+		ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
 	}
 }
 
 func (h *Handler) handleUnquarantine(ctx *gin.Context) {
 	var body request
-	ctx.BindJSON(&body)
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
 
 	err := h.service.Unquarantine(body.Purl)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.Status(http.StatusOK)
 }
 
 func (h *Handler) handleEvaluate(ctx *gin.Context) {
 	var body request
-	ctx.BindJSON(&body)
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
 	pkg, err := h.service.EvaluatePurl(body.Purl)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
 }

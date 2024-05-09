@@ -18,6 +18,19 @@ type Package struct {
 	Pathname   string
 	Purl       string `gorm:"unique"`
 	State      State
-	FinalScore float32
+	FinalScore float64
 	Report     string
+}
+
+func (s State) ToSring() string {
+	switch s {
+	case Healthy:
+		return "healthy"
+	case Quarantined:
+		return "quarantined"
+	case Unquarantined:
+		return "unquarantined"
+	default:
+		return "undefined"
+	}
 }
