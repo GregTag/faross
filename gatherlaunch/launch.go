@@ -17,6 +17,10 @@ func InitGatherLaunch(instrumentsPath string) error {
 	if err != nil {
 		return err
 	}
+	images := util.GetAllImages()
+	for _, image := range images {
+		util.PullDockerImage(image)
+	}
 	// Get list of all images
 	// err = PullImages(...)
 	return nil
