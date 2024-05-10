@@ -15,6 +15,7 @@ FROM docker:26.1.0-cli AS runtime
 WORKDIR /app
 
 COPY firewall/config.yaml config.yaml
+COPY firewall/templates templates
 COPY gatherlaunch/instruments.json instruments.json
 COPY --from=build /firewall firewall
 

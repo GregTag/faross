@@ -101,9 +101,9 @@ func TestRepositoryStore(t *testing.T) {
 
 	readed, err := store.GetByInstanceId(instance)
 	assert.NoError(t, err)
-	assert.Equal(t, len(repositories), len(*readed))
+	assert.Equal(t, len(repositories), len(readed))
 
-	rep1 := &(*readed)[0]
+	rep1 := &(readed)[0]
 	rep1.QuarantineEnabled = !rep1.QuarantineEnabled
 	err = store.Save(rep1)
 	assert.NoError(t, err)
@@ -115,14 +115,14 @@ func TestRepositoryStore(t *testing.T) {
 	future := time.Now().Add(time.Minute)
 	reps, err := store.GetByInstanceIdAndSince(instance, future)
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(*reps))
+	assert.Equal(t, 0, len(reps))
 
 	err = store.Save(&[]entity.Repository{})
 	assert.Error(t, err)
 
 	arr, err := store.GetByInstanceId("NO-INSTANCE-ID")
 	assert.NoError(t, err)
-	assert.Equal(t, 0, len(*arr))
+	assert.Equal(t, 0, len(arr))
 
 	_, err = store.GetById(100)
 	assert.Error(t, err)

@@ -45,7 +45,7 @@ func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Pack
 	// 	return nil, err
 	// }
 
-	final_score, ok := resp["final_score"].(float32)
+	final_score, ok := resp["final_score"].(float64)
 	if !ok {
 		return nil, errors.New("no final score in report")
 	}
@@ -162,14 +162,14 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 	}
 
 	var evalResults []map[string]any
-	var pkgs = make([]*entity.Package, len(components))
+	var pkgs = make([]entity.Package, len(components))
 	for _, res := range runResults {
 		evalResults = append(evalResults,
 			map[string]any{
 				"requestIndex": res.index,
 				"quarantine":   res.pkg.State == entity.Quarantined,
 			})
-		pkgs[res.index] = res.pkg
+		pkgs[res.index] = *res.pkg
 	}
 
 	err = s.storage.Repository.AppendPackages(repos.ID, pkgs)
