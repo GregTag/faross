@@ -184,10 +184,6 @@ func RunDecisionMaking(inputFile string) (Decision, error) {
 		log.Printf("Container for decision-making finished successfully\n")
 		exitCode = status.StatusCode
 	}
-	if exitCode != 0 {
-		log.Printf("Container for decision-making finished with non-zero exit code\n")
-		return FailDecision, fmt.Errorf("container for decision-making finished with non-zero exit code")
-	}
 
 	outRaw, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{ShowStdout: true})
 	if err != nil {
@@ -199,6 +195,11 @@ func RunDecisionMaking(inputFile string) (Decision, error) {
 	if err != nil {
 		log.Printf("Failed to parse container logs for decision-making")
 		return FailDecision, err
+	}
+
+	if exitCode != 0 {
+		log.Printf("Container for decision-making finished with non-zero exit code. Output:\n%s\n", out)
+		return FailDecision, fmt.Errorf("container for decision-making finished with non-zero exit code")
 	}
 
 	decision, err := ParseDecision(out)

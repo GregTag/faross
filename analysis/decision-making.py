@@ -60,7 +60,7 @@ def parse_json_file(input_file: str):
     return None
 
 
-def calculate_decision(score: float | None):
+def calculate_decision(score):
     if score is None:
         return {"score": 10, "is_quarantined": True}
     decision: bool = score > 6
