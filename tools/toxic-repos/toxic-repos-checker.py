@@ -22,13 +22,12 @@ def find_item(data, name):
 
 
 def normalize_item(item, name):
-    inaccessible_category = 'INACCESSIBLE'
     warning_category = 'WARNING'
     dangerous_category = 'DANGEROUS'
     safe_category = 'SAFE'
 
     problem_categories = {
-        'ip_block': inaccessible_category,
+        'ip_block': warning_category,
         'political_slogans': warning_category,
         'hostile_actions': dangerous_category,
         'malware': dangerous_category,
@@ -39,16 +38,14 @@ def normalize_item(item, name):
 
     risks = {
         safe_category: 'Low',
-        inaccessible_category: 'Medium',
-        warning_category: 'Medium',
+        warning_category: 'Low',
         dangerous_category: 'High',
     }
     
     scores = {
         safe_category: 10,
-        inaccessible_category: 5,
-        warning_category: 5,
-        dangerous_category: 2,
+        warning_category: 8,
+        dangerous_category: 0,
     }
 
     problem_category = problem_categories[item.get('problem_type', 'none')]
@@ -66,10 +63,19 @@ def normalize_item(item, name):
     return normalized_item
 
 
+def rename_package(name):
+    if name.startswith('pkg:'):
+        start_index = name.find('/') + 1
+        end_index = name.rfind('@')
+        return name[start_index:end_index]
+    return name
+
+
 if __name__ == '__main__':
     url = 'https://raw.githubusercontent.com/toxic-repos/toxic-repos/main/data/json/toxic-repos.json'
     filename = 'toxic-repos.json'
     name = sys.argv[1]
+    name = rename_package(name)
 
     data = get_json(url, filename)
     item = find_item(data, name)
