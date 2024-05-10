@@ -1,38 +1,42 @@
 {
   "go": {
     "static": {
-      "deps.dev": "imarenf/deps.dev:1.0",
-      "osv.dev": "imarenf/osv.dev:1.0",
-      "toxic-repos": "imarenf/toxic-repos:1.0"
+      "osv.dev": "imarenf/osv.dev:1.1",
+      "toxic-repos": "imarenf/toxic-repos:1.1",
+      "govulncheck": "imarenf/govulncheck:1.0"
     },
     "dynamic": {
+      "packj-trace": "imarenf/packj-trace:1.0"
     }
   },
   "maven": {
     "static": {
-      "deps.dev": "imarenf/deps.dev:1.0",
-      "osv.dev": "imarenf/osv.dev:1.0",
-      "toxic-repos": "imarenf/toxic-repos:1.0"
+      "osv.dev": "imarenf/osv.dev:1.1",
+      "toxic-repos": "imarenf/toxic-repos:1.1",
+      "packj-static": "imarenf/packj-static:1.0"
     },
     "dynamic": {
+      "packj-trace": "imarenf/packj-trace:1.0"
     }
   },
   "npm": {
     "static": {
-      "deps.dev": "imarenf/deps.dev:1.0",
-      "osv.dev": "imarenf/osv.dev:1.0",
-      "toxic-repos": "imarenf/toxic-repos:1.0"
+      "osv.dev": "imarenf/osv.dev:1.1",
+      "toxic-repos": "imarenf/toxic-repos:1.1",
+      "packj-static": "imarenf/packj-static:1.0"
     },
     "dynamic": {
+      "packj-trace": "imarenf/packj-trace:1.0"
     }
   },
   "pypi": {
     "static": {
-      "deps.dev": "imarenf/deps.dev:1.0",
-      "osv.dev": "imarenf/osv.dev:1.0",
-      "toxic-repos": "imarenf/toxic-repos:1.0"
+      "osv.dev": "imarenf/osv.dev:1.1",
+      "toxic-repos": "imarenf/toxic-repos:1.1",
+      "packj-static": "imarenf/packj-static:1.0"
     },
     "dynamic": {
+      "packj-trace": "imarenf/packj-trace:1.0"
     }
   }
 }

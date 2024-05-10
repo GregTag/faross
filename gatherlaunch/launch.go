@@ -17,6 +17,10 @@ func InitGatherLaunch(instrumentsPath string) error {
 	if err != nil {
 		return err
 	}
+	images := util.GetAllImages()
+	for _, image := range images {
+		util.PullDockerImage(image)
+	}
 	// Get list of all images
 	// err = PullImages(...)
 	return nil
@@ -84,11 +88,17 @@ func Scan(purl packageurl.PackageURL) (map[string]any, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse output template: %s", err)
 	}
-	// TODO: replace os.Stdout with file if needed
-	tmpl.Execute(os.Stdout, containerOutputs)
 
-	// TODO: replace placeholder with dedcision-making report
-	return map[string]any{
-		"final_score": 6.0,
-	}, nil
+	f, err := os.Create("/tmp/container_output.json")
+	defer f.Close()
+	if err != nil {
+		return nil, fmt.Errorf("failed to create file for containers output %s", err)
+	}
+	tmpl.Execute(f, containerOutputs)
+
+	decision, err := util.RunDecisionMaking("/tmp/container_output.json")
+	if err != nil {
+		return nil, fmt.Errorf("Decision-making finished with an error %s", err)
+	}
+	return decision, nil
 }

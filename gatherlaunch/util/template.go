@@ -2,17 +2,17 @@ package util
 
 // TODO: add other elements
 const OutputTemplate = `{
-	"static analysis": { {{range $index, $element := .}}{{ if $index }},{{ end }}
+	"static_analysis": { {{range $index, $element := .}}{{ if ne $element.ToolName "packj-trace" }}{{ if $index  }},{{ end }}
 		"{{ $element.ToolName }}": {
 			"result": {{ $element.Output }},
 			"exit_code": {{ $element.ExitCode }}
-		}{{ end }}
+		}{{ end }}{{ end }}
 	},
-	"dynamic analysis": {
-		"packj-trace": {
-			"result": "",
-			"exit-code": 0
-		}
+	"dynamic_analysis": { {{range $index, $element := .}}{{ if eq $element.ToolName "packj-trace" }}
+		"{{ $element.ToolName }}": {
+			"result": {{ $element.Output }},
+			"exit_code": {{ $element.ExitCode }}
+		}{{ end }}{{ end }}
 	}
 }
 `
