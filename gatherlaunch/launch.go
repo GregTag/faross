@@ -21,8 +21,6 @@ func InitGatherLaunch(instrumentsPath string) error {
 	for _, image := range images {
 		util.PullDockerImage(image)
 	}
-	// Get list of all images
-	// err = PullImages(...)
 	return nil
 }
 
@@ -38,7 +36,7 @@ func PullImages(images map[string]string) {
 	wg.Wait()
 }
 
-func Scan(purl packageurl.PackageURL) (map[string]any, error) {
+func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	pkgInfo := util.ParsePurl(purl)
 
 	toolsImageMapping, err := util.SelectTools(pkgInfo.Type)
@@ -89,16 +87,18 @@ func Scan(purl packageurl.PackageURL) (map[string]any, error) {
 		return nil, fmt.Errorf("failed to parse output template: %s", err)
 	}
 
-	f, err := os.Create("/tmp/container_output.json")
-	defer f.Close()
+	f, err := os.Create("/tmp/input.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file for containers output %s", err)
 	}
+
+	defer f.Close()
+
 	tmpl.Execute(f, containerOutputs)
 
 	decision, err := util.RunDecisionMaking("/tmp/container_output.json")
 	if err != nil {
-		return nil, fmt.Errorf("Decision-making finished with an error %s", err)
+		return nil, fmt.Errorf("decision-making finished with an error %s", err)
 	}
-	return decision, nil
+	return &decision, nil
 }

@@ -9,7 +9,7 @@
 
 1. `docker pull imarenf/example-output:1.0`
 
-2. `go run main.go {purl}`
+2. `go run cmd/main.go {purl}`
 
 ### Пример вывода:
 

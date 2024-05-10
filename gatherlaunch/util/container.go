@@ -48,7 +48,7 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 	case "toxic-repos":
 		return []string{pkgInfo.Purl}, nil
 	default:
-		return nil, fmt.Errorf("Unexpected tool name: %s", toolName)
+		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
 }
 
@@ -132,30 +132,28 @@ func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr Tool
 	tr.RespCh <- containerOutput
 }
 
-func RunDecisionMaking(inputFile string) (map[string]any, error) {
+func RunDecisionMaking(inputFile string) (Decision, error) {
 	// TODO: write 1 function to launch the container and call it from RunDecisionMaking and RunDockerContainer
 	ctx := context.Background()
 	containerName := "faross-decision-making"
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		log.Println("Failed to create new docker client")
-		return map[string]any{
-			"final_score": 6.0,
-		}, nil
+		return FailDecision, nil
 	}
 	defer cli.Close()
 
 	resp, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "imarenf/decision-making:1.0",
+			Image: "imarenf/decision-making:1.1",
 			Tty:   true,
 		},
 		&container.HostConfig{
 			Mounts: []mount.Mount{
 				{
 					Type:   mount.TypeBind,
-					Source: "/tmp/container_output.json",
-					Target: "/usr/src/app/input/input.json",
+					Source: "/tmp",
+					Target: "/usr/src/app/input",
 				},
 			},
 		},
@@ -165,17 +163,13 @@ func RunDecisionMaking(inputFile string) (map[string]any, error) {
 	)
 	if err != nil {
 		log.Printf("Failed to create the container for decision-making: %s\n", err.Error())
-		return map[string]any{
-			"final_score": 6.0,
-		}, err
+		return FailDecision, err
 	}
 	defer cli.ContainerRemove(ctx, resp.ID, container.RemoveOptions{Force: true})
 
 	if err := cli.ContainerStart(ctx, resp.ID, container.StartOptions{}); err != nil {
 		log.Printf("Failed to start the container for decision-making: %s\n", err.Error())
-		return map[string]any{
-			"final_score": 6.0,
-		}, err
+		return FailDecision, err
 	}
 
 	statusCh, waitErrCh := cli.ContainerWait(ctx, resp.ID, container.WaitConditionNotRunning)
@@ -184,46 +178,35 @@ func RunDecisionMaking(inputFile string) (map[string]any, error) {
 	case err := <-waitErrCh:
 		if err != nil {
 			log.Printf("Container for decision-making returned the error %s\n", err.Error())
-			return map[string]any{
-				"final_score": 6.0,
-			}, err
+			return FailDecision, err
 		}
 	case status := <-statusCh:
 		log.Printf("Container for decision-making finished successfully\n")
 		exitCode = status.StatusCode
 	}
-	if exitCode != 0 {
-		log.Printf("Container for decision-making finished with non-zero exit code\n")
-		return map[string]any{
-			"final_score": 6.0,
-		}, fmt.Errorf("Container for decision-making finished with non-zero exit code")
-	}
 
 	outRaw, err := cli.ContainerLogs(ctx, resp.ID, container.LogsOptions{ShowStdout: true})
 	if err != nil {
 		log.Printf("Failed to get container logs for decision-making")
-		return map[string]any{
-			"final_score": 6.0,
-		}, err
+		return FailDecision, err
 	}
 
 	out, err := io.ReadAll(outRaw)
 	if err != nil {
 		log.Printf("Failed to parse container logs for decision-making")
-		return map[string]any{
-			"final_score": 6.0,
-		}, err
+		return FailDecision, err
+	}
+
+	if exitCode != 0 {
+		log.Printf("Container for decision-making finished with non-zero exit code. Output:\n%s\n", out)
+		return FailDecision, fmt.Errorf("container for decision-making finished with non-zero exit code")
 	}
 
 	decision, err := ParseDecision(out)
 	if err != nil {
 		log.Printf("Failed to parse container logs for decision-making")
-		return map[string]any{
-			"final_score": 6.0,
-		}, err
+		return FailDecision, err
 	}
 
-	return map[string]any{
-		"final_score": decision,
-	}, nil
+	return decision, nil
 }

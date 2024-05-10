@@ -32,28 +32,17 @@ func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Pack
 
 	log.Println("Scanned response for ", purl, ": ", respStr)
 
-	// TODO: get decision from report
-	state := entity.Quarantined
-	// switch resp.Decision {
-	// case "quarantine":
-	// 	state = entity.Quarantined
-	// case "healthy":
-	// 	state = entity.Healthy
-	// default:
-	// 	err = fmt.Errorf("invalid decision")
-	// 	log.Println(err)
-	// 	return nil, err
-	// }
-
-	final_score, ok := resp["final_score"].(float64)
-	if !ok {
-		return nil, errors.New("no final score in report")
+	var state entity.State
+	if resp.IsQuarantined {
+		state = entity.Quarantined
+	} else {
+		state = entity.Healthy
 	}
 
 	result := entity.Package{
 		Purl:       purl.ToString(),
 		State:      state,
-		FinalScore: final_score,
+		FinalScore: resp.Score,
 		Report:     respStr,
 	}
 
