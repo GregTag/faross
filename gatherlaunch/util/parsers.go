@@ -53,16 +53,22 @@ func GetParser(toolName string) (Parser, error) {
 }
 
 type Decision struct {
-	Score any `json:"score"`
+	Score         float64 `json:"score"`
+	IsQuarantined bool    `json:"is_quarantined"`
 }
 
-func ParseDecision(out []byte) (any, error) {
+var FailDecision = Decision{
+	Score:         6,
+	IsQuarantined: true,
+}
+
+func ParseDecision(out []byte) (Decision, error) {
 	desicion := Decision{}
 	err := json.Unmarshal(out, &desicion)
 	if err != nil {
-		return nil, err
+		return FailDecision, err
 	}
-	return desicion.Score, nil
+	return desicion, nil
 }
 
 func GetPurl(purlRaw string) (packageurl.PackageURL, error) {
