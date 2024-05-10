@@ -1,0 +1,13 @@
+Command,Argument,Environment,Risk
+sudo,--,--,High
+rm,-rf,--,High
+wget,-O /path/to/file,HTTP_PROXY,High
+curl,-o /path/to/file,HTTP_PROXY,High
+ssh,-i identity_file,SSH_AUTH_SOCK,High
+telnet,-l username,TELNET_PORT,High
+fdisk,-w,--,High
+mount,/dev/device /path/to/mountpoint,--,Medium
+umount,/path/to/mountpoint,--,Medium
+find,-exec <command> {} \;,--,Medium
+ping,,--,Low
+traceroute,,,Low
