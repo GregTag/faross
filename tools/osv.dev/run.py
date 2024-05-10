@@ -38,10 +38,21 @@ if __name__ == '__main__':
     vulns_count = calculateVulnsCount(response["vulns"]) if response else 0
     score = 10 - vulns_count if vulns_count <= 10 else 0
 
+    if score == 10:
+        risk = 'No risk'
+    elif score >= 8:
+        risk = 'Low'
+    elif score >= 5:
+        risk = 'Medium'
+    elif score >= 1:
+        risk = 'High'
+    else:
+        risk = 'Critical'
+
     report = {
         "checkName": "CVE-check",
         "score": score,
-        "risk": "High",
+        "risk": risk,
         "description": f"Detected {vulns_count} vulnerabilities.",
     }
 

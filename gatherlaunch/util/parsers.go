@@ -51,3 +51,20 @@ func GetParser(toolName string) (Parser, error) {
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
 }
+
+type Decision struct {
+	Score any `json:"score"`
+}
+
+func ParseDecision(out []byte) (any, error) {
+	desicion := Decision{}
+	err := json.Unmarshal(out, &desicion)
+	if err != nil {
+		return nil, err
+	}
+	return desicion.Score, nil
+}
+
+func GetPurl(purlRaw string) (packageurl.PackageURL, error) {
+	return packageurl.FromString(purlRaw)
+}
