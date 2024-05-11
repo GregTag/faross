@@ -3,6 +3,8 @@
 
 Скрипт `run.sh` принимает на вход путь до директории, которую необходимо проверить, запускает application inspector, записывает его вывод в файл `data.json`. Запускает по очереди все проверки, выводит результат в виде согласованных json-ов на отдельных строках. Если произошла ошибка (например, директория не была найдена), скрипт завершает работу с `error_code=1`, ничего не выводит в поток вывода, логирует ошибку в `stderr`.
 
+Для корректной работы скрипта, команда `appinspector analyze` должна быть доступна как команда терминала. Application Inspector можно установить с помощью [dotnel tool](https://github.com/microsoft/ApplicationInspector/wiki/2.-NuGet-Support#installing-and-using-the-command-line-tool)
+
 Пример:
 ```
 > ./run.sh ./pisc         
