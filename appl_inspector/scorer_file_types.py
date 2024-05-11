@@ -16,8 +16,10 @@ score=10
 for executable in ex_ext:
     if executable in project_ext:
         score = 3
+        break
 for obfuscated in obf_ext:
     if obfuscated in project_ext:
         score = 1
-        
+        break
+
 print(score)
