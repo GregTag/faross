@@ -13,8 +13,8 @@ fi
 
 RESULT_FILE="data.json"
 oss-detect-backdoor --format sarifv2 --output-file $RESULT_FILE $1 || error_exit "Error occurred while analyzing"
-
-tags_matched=$(jq '.runs | first | .results | length' $RESULT_FILE)
+tags_matched=$(jq '.runs | first | .results | map( select(.properties.Confidence > 1) ) | .[].rule.id' $RESULT_FILE \
+    | sort | uniq | wc -l)
 score=$(( tags_matched < 10 ? 10 - tags_matched : 0 ))
 
 name="Backdoors"

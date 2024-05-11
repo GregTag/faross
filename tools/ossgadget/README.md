@@ -5,6 +5,6 @@
 
 Пример:
 ```
-> ./run.sh pkg:npm/randombytes     
-> {"Backdoors": {"score": 7, "risk": "medium", "desc": "Uses regular expressions to identify backdoors"}}
+> ./run.sh pkg:npm/execa    
+> {"Backdoors": {"score": 8, "risk": "medium", "desc": "Uses regular expressions to identify backdoors"}}
 ```
