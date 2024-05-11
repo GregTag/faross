@@ -8,3 +8,5 @@
 > ./run.sh pkg:npm/execa    
 > {"Backdoors": {"score": 8, "risk": "medium", "desc": "Uses regular expressions to identify backdoors"}}
 ```
+
+Для корректной работы, утилита `oss-detect-backdoor` должна быть доступна как команда терминала. У OSSGadget есть написанный [докер-файл](https://github.com/microsoft/OSSGadget/wiki/Docker-Image)
