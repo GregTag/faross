@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"io"
 	"log"
 
 	"github.com/docker/docker/api/types/image"
@@ -34,4 +35,10 @@ func PullDockerImage(imageName string) {
 		return
 	}
 	defer reader.Close()
+
+	out, err := io.ReadAll(reader)
+	if err != nil {
+		log.Println("Error while parsing: ", err)
+	}
+	log.Println("Out from ImagePull: ", string(out))
 }
