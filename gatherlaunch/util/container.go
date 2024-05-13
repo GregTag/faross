@@ -145,7 +145,7 @@ func RunDecisionMaking(inputFile string) (Decision, error) {
 
 	resp, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "imarenf/decision-making:1.1",
+			Image: "imarenf/decision-making:1.0",
 			Tty:   true,
 		},
 		&container.HostConfig{
