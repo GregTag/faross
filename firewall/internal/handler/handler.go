@@ -23,5 +23,8 @@ func (h *Handler) GetRoute() *gin.Engine {
 	public := router.Group("/api")
 	h.addPublicAPI(public)
 
+	router.LoadHTMLFiles("templates/table.html")
+	router.GET("/", h.handleHome)
+
 	return router
 }

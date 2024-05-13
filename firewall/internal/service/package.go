@@ -3,9 +3,9 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"faross/gatherlaunch"
 	"firewall/internal/entity"
 	"firewall/pkg/parsers"
-	"fmt"
 	"log"
 	"sync"
 
@@ -18,22 +18,8 @@ type EvalDataRequest struct {
 	Hash     string `json:"hash"`
 }
 
-// Will be in gather-launch
-type response struct {
-	Decision   string  `json:"decision"`
-	FinalScore float32 `json:"final_score"`
-}
-
-// Will be in gather-launch
-func runGatherLaunch(_ *packageurl.PackageURL) (response, error) {
-	return response{
-		Decision:   "quarantine",
-		FinalScore: 6.0,
-	}, nil
-}
-
 func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Package, error) {
-	resp, err := runGatherLaunch(purl)
+	resp, err := gatherlaunch.Scan(*purl)
 	if err != nil {
 		return nil, err
 	}
@@ -47,21 +33,16 @@ func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Pack
 	log.Println("Scanned response for ", purl, ": ", respStr)
 
 	var state entity.State
-	switch resp.Decision {
-	case "quarantine":
+	if resp.IsQuarantined {
 		state = entity.Quarantined
-	case "healthy":
+	} else {
 		state = entity.Healthy
-	default:
-		err = fmt.Errorf("invalid decision")
-		log.Println(err)
-		return nil, err
 	}
 
 	result := entity.Package{
 		Purl:       purl.ToString(),
 		State:      state,
-		FinalScore: resp.FinalScore,
+		FinalScore: resp.Score,
 		Report:     respStr,
 	}
 
@@ -170,14 +151,14 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 	}
 
 	var evalResults []map[string]any
-	var pkgs = make([]*entity.Package, len(components))
+	var pkgs = make([]entity.Package, len(components))
 	for _, res := range runResults {
 		evalResults = append(evalResults,
 			map[string]any{
 				"requestIndex": res.index,
 				"quarantine":   res.pkg.State == entity.Quarantined,
 			})
-		pkgs[res.index] = res.pkg
+		pkgs[res.index] = *res.pkg
 	}
 
 	err = s.storage.Repository.AppendPackages(repos.ID, pkgs)

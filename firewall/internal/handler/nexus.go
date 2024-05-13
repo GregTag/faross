@@ -78,11 +78,13 @@ func (h *Handler) handleConfigure(ctx *gin.Context) {
 		RepositoryManagerProductName    string                 `json:"repositoryManagerProductName" binding:"required"`
 		RepositoryManagerProductVersion string                 `json:"repositoryManagerProductVersion" binding:"required"`
 	}
-	ctx.BindJSON(&body)
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
 	log.Printf("Configure: %+v\n", body)
 
 	// ignore errors
-	h.service.ConfigureRepositories(instance, &body.Repositories)
+	h.service.ConfigureRepositories(instance, body.Repositories)
 	ctx.Status(http.StatusOK)
 }
 
@@ -93,7 +95,8 @@ func (h *Handler) handleGetConfigure(ctx *gin.Context) {
 	repos, err := h.service.GetConfiguredRepositories(instance, sinceStr)
 	log.Printf("Sending repos: %+v\n", repos)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.JSON(http.StatusOK, repos)
 }
@@ -106,7 +109,8 @@ func (h *Handler) handleAuditEnable(ctx *gin.Context) {
 
 	repos, err := h.service.SetAuditEnable(instance, name, enabled)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.JSON(http.StatusOK, repos)
 }
@@ -119,7 +123,8 @@ func (h *Handler) handleQuarantineEnable(ctx *gin.Context) {
 
 	repos, err := h.service.SetQuarantineEnable(instance, name, enabled)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 	ctx.JSON(http.StatusOK, repos)
 }
@@ -131,11 +136,14 @@ func (h *Handler) handleEvalQuarantine(ctx *gin.Context) {
 		Components []service.EvalDataRequest `json:"components" binding:"required"`
 		Cause      string                    `json:"cause" binding:"required"`
 	}
-	ctx.BindJSON(&body)
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
 
 	evalResults, err := h.service.EvalRequest(instance, name, body.Components)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	response := gin.H{
@@ -152,7 +160,8 @@ func (h *Handler) handleUnquarantined(ctx *gin.Context) {
 
 	list, err := h.service.GetUnquarantined(instance, name, sinceStr)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusInternalServerError)
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+		return
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
@@ -165,7 +174,8 @@ func (h *Handler) handleGetSummary(ctx *gin.Context) {
 	name := ctx.Param("public_id")
 	response, err := h.service.GetSummary(instance, name)
 	if err != nil {
-		ctx.AbortWithStatus(http.StatusNotFound)
+		ctx.AbortWithError(http.StatusNotFound, err)
+		return
 	}
 	ctx.JSON(http.StatusOK, response)
 }

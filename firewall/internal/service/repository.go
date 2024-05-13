@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
-func (s *Service) ConfigureRepositories(instance string, repositories *[]entity.RepositoryDTO) error {
-	entries := make([]entity.Repository, 0, len(*repositories))
-	for _, data := range *repositories {
+func (s *Service) ConfigureRepositories(instance string, repositories []entity.RepositoryDTO) error {
+	entries := make([]entity.Repository, 0, len(repositories))
+	for _, data := range repositories {
 		entries = append(entries, entity.Repository{
 			InstanceID:    instance,
 			RepositoryDTO: data,
@@ -25,31 +25,30 @@ func (s *Service) ConfigureRepositories(instance string, repositories *[]entity.
 	return nil
 }
 
-func parseTimestamp(timestamp string) (*time.Time, error) {
+func parseTimestamp(timestamp string) (time.Time, error) {
 	sinceTimestamp, err := strconv.ParseInt(timestamp, 10, 64)
 	if err != nil {
-		return nil, err
+		return time.Time{}, err
 	}
-	time := time.Unix(sinceTimestamp, 0)
-	return &time, nil
+	return time.Unix(sinceTimestamp, 0), nil
 }
 
-func (s *Service) GetConfiguredRepositories(instance, sinceStr string) (*[]entity.RepositoryDTO, error) {
+func (s *Service) GetConfiguredRepositories(instance, sinceStr string) ([]entity.RepositoryDTO, error) {
 	since, err := parseTimestamp(sinceStr)
 	if err != nil {
 		return nil, err
 	}
-	entries, err := s.storage.Repository.GetByInstanceIdAndSince(instance, *since)
+	entries, err := s.storage.Repository.GetByInstanceIdAndSince(instance, since)
 	if err != nil {
 		log.Printf("Error in get configured repositories: %s\n", err)
 		return nil, err
 	}
 
-	repos := make([]entity.RepositoryDTO, 0, len(*entries))
-	for _, entry := range *entries {
+	repos := make([]entity.RepositoryDTO, 0, len(entries))
+	for _, entry := range entries {
 		repos = append(repos, entry.RepositoryDTO)
 	}
-	return &repos, nil
+	return repos, nil
 }
 
 func (s *Service) SetAuditEnable(instance, name string, enabled bool) (*entity.ApiRepository, error) {
@@ -70,7 +69,7 @@ func (s *Service) SetQuarantineEnable(instance, name string, enabled bool) (*ent
 	return repos.ToApiRepository(), nil
 }
 
-func (s *Service) GetSummary(instance, name string) (*map[string]any, error) {
+func (s *Service) GetSummary(instance, name string) (map[string]any, error) {
 	repos, err := s.storage.Repository.Load(instance, name)
 	if err != nil {
 		return nil, err
@@ -104,10 +103,10 @@ func (s *Service) GetSummary(instance, name string) (*map[string]any, error) {
 		"quarantinedComponentCount": quarantined,
 		// "reportUrl" : "", // TODO
 	}
-	return &response, nil
+	return response, nil
 }
 
-func (s *Service) GetUnquarantined(instance, name, sinceStr string) (*[]string, error) {
+func (s *Service) GetUnquarantined(instance, name, sinceStr string) ([]string, error) {
 	since, err := parseTimestamp(sinceStr)
 	if err != nil {
 		return nil, err
@@ -118,7 +117,7 @@ func (s *Service) GetUnquarantined(instance, name, sinceStr string) (*[]string, 
 		return nil, err
 	}
 
-	entries, err := s.storage.Repository.GetUnquarantined(repos.ID, *since)
+	entries, err := s.storage.Repository.GetUnquarantined(repos.ID, since)
 	if err != nil {
 		return nil, err
 	}
@@ -127,5 +126,5 @@ func (s *Service) GetUnquarantined(instance, name, sinceStr string) (*[]string, 
 	for _, entry := range entries {
 		list = append(list, entry.Pathname)
 	}
-	return &list, nil
+	return list, nil
 }
