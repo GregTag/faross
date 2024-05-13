@@ -4,7 +4,6 @@
  docker build -t pa-image .
 ```
 
-(сейчас небольше проблемы на ноуте с docker, надо ещё проверить, что все ок)
 ```bash
 docker run --cgroupns=host --privileged --rm -ti \
  pa-image analyze \

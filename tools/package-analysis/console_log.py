@@ -16,7 +16,6 @@ class Checker:
         for cmd in command:
             if cmd in self.df.index:
                 arg, env, risk = self.df.loc[cmd]
-                # print(arg, env, risk)
                 score = min(score, risk_to_score[risk])
                 break
         return score
@@ -32,12 +31,10 @@ class Checker:
                     new_data["commands"] = data["Analysis"]["import"]["Commands"]
                     new_data["commands"] += data["Analysis"]["install"]["Commands"]
                     for entry in new_data["commands"]:
-                        # command, environment = entry.values()
                         entry["Score"] = self.score_check(*entry.values())
-                    # print(new_data["install_commands"][0]["Command"])
                     json_string = json.dumps(new_data, indent=4)
                     print(json_string)
 
 
 checker = Checker("security_db.csv")
-checker.run("/Users/trimesh/Library/Mobile Documents/com~apple~CloudDocs/files/mipt/6_sem/project/docker-p-a/results")
+checker.run("/results")
