@@ -32,11 +32,11 @@ func (s *PackageStore) GetByPurl(purl string) (*entity.Package, error) {
 	return &entry, err
 }
 
-func (s *PackageStore) Unquarantine(purl string) error {
+func (s *PackageStore) Unquarantine(purl, comment string) error {
 	result := s.db.Model(&entity.Package{}).
 		Where("purl = ?", purl).
 		Where("state = ?", entity.Quarantined).
-		Update("state", entity.Unquarantined)
+		Updates(entity.Package{State: entity.Unquarantined, Comment: comment})
 	if result.Error != nil {
 		return result.Error
 	}

@@ -31,14 +31,14 @@ $ go run cmd/app/main.go
 * `/nexus/*` - API для общения с Nexus Repository
 * `/api/*` - API для пользовательского взаимодействия с firewall
     - `GET /api/status` - получить список всей просканированных пакетов
-        - Response `[{<package>}]`, где `package` имеет поля: `purl`, `state`, `score`, `comment`.  
+        - Response `[{<package>}]`, где `package` имеет поля: `purl`, `state`, `score`, `comment`, `changed_at`.  
     - `POST /api/report` - получить отчёт о сканировании
         - Request `{"purl":"..."}`
         - Response `{<report>}`
     - `POST /api/evaluate` - просканировать пакет и получить результаты сканирования
         - Request `{"purl":"..."}`
         - Response `{<report>}`
-    - `POST /api/unquarantine` - разблокировать пакет помещённый в карантин
-        - Request `{"purl":"..."}`
+    - `POST /api/unquarantine` - разблокировать пакет помещённый в карантин с указанием причины разблокировки.
+        - Request `{"purl":"...","comment":"..."}`
     - `PUT /api/comment` - изменить комментарий к просканированному пакету
         - Request `{"purl":"...","comment":"..."}`

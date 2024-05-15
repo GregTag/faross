@@ -170,8 +170,8 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 	return evalResults, nil
 }
 
-func (s *Service) Unquarantine(purl string) error {
-	err := s.storage.Package.Unquarantine(purl)
+func (s *Service) Unquarantine(purl, comment string) error {
+	err := s.storage.Package.Unquarantine(purl, comment)
 	if err != nil {
 		log.Println("Error in unqarantine: ", err)
 	}
@@ -186,10 +186,11 @@ func preparePackages(pkgs []entity.Package) []map[string]any {
 	prepared := make([]map[string]any, 0, len(pkgs))
 	for _, pkg := range pkgs {
 		prepared = append(prepared, map[string]any{
-			"purl":    pkg.Purl,
-			"state":   pkg.State.ToSring(),
-			"score":   pkg.FinalScore,
-			"comment": pkg.Comment,
+			"purl":       pkg.Purl,
+			"state":      pkg.State.ToSring(),
+			"score":      pkg.FinalScore,
+			"comment":    pkg.Comment,
+			"changed_at": pkg.UpdatedAt,
 		})
 	}
 	return prepared

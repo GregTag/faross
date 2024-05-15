@@ -75,19 +75,21 @@ func TestPackageStore(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, unq)
 
-	assert.Error(t, s.Package.Unquarantine(purl1))
-	assert.NoError(t, s.Package.Unquarantine(purl2))
+	comment := "Some interesting comment"
+	assert.Error(t, s.Package.Unquarantine(purl1, comment))
+	assert.NoError(t, s.Package.Unquarantine(purl2, comment))
 
 	unq, err = s.Repository.GetUnquarantined(rep1.ID, now)
 	assert.NoError(t, err)
 	assert.Len(t, unq, 1)
 	assert.Equal(t, pkg3.ID, unq[0].ID)
+	assert.Equal(t, entity.Unquarantined, unq[0].State)
+	assert.Equal(t, comment, unq[0].Comment)
 
 	packages, err := s.Package.GetAll()
 	assert.NoError(t, err)
 	assert.Len(t, packages, 2)
 
-	comment := "Some interesting comment"
 	err = s.Package.UpdateComment(purl1, comment)
 	assert.NoError(t, err)
 

@@ -45,13 +45,18 @@ func (h *Handler) handleGetReport(ctx *gin.Context) {
 	}
 }
 
+type requestComment struct {
+	request
+	Comment string `json:"comment" binding:"required"`
+}
+
 func (h *Handler) handleUnquarantine(ctx *gin.Context) {
-	var body request
+	var body requestComment
 	if ctx.BindJSON(&body) != nil {
 		return
 	}
 
-	err := h.service.Unquarantine(body.Purl)
+	err := h.service.Unquarantine(body.Purl, body.Comment)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -70,11 +75,6 @@ func (h *Handler) handleEvaluate(ctx *gin.Context) {
 		return
 	}
 	ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
-}
-
-type requestComment struct {
-	request
-	Comment string `json:"comment" binding:"required"`
 }
 
 func (h *Handler) handlePutComment(ctx *gin.Context) {
