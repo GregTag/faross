@@ -20,6 +20,7 @@ type Package struct {
 	State      State
 	FinalScore float64
 	Report     string
+	Comment    string
 }
 
 func (s State) ToSring() string {

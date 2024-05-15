@@ -179,7 +179,20 @@ func (s *Service) Unquarantine(purl string) error {
 }
 
 func (s *Service) GetPackage(purl string) (*entity.Package, error) {
-	return s.storage.Package.TryGetByPurl(purl)
+	return s.storage.Package.GetByPurl(purl)
+}
+
+func preparePackages(pkgs []entity.Package) []map[string]any {
+	prepared := make([]map[string]any, 0, len(pkgs))
+	for _, pkg := range pkgs {
+		prepared = append(prepared, map[string]any{
+			"purl":    pkg.Purl,
+			"state":   pkg.State.ToSring(),
+			"score":   pkg.FinalScore,
+			"comment": pkg.Comment,
+		})
+	}
+	return prepared
 }
 
 func (s *Service) GetAll() ([]map[string]any, error) {
@@ -187,12 +200,9 @@ func (s *Service) GetAll() ([]map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	response := make([]map[string]any, 0, len(pkgs))
-	for _, pkg := range pkgs {
-		response = append(response, map[string]any{
-			"purl":  pkg.Purl,
-			"state": pkg.State,
-		})
-	}
-	return response, nil
+	return preparePackages(pkgs), nil
+}
+
+func (s *Service) ChangeComment(purl, comment string) error {
+	return s.storage.Package.UpdateComment(purl, comment)
 }

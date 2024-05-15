@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"errors"
+	"firewall/internal/entity"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,9 +10,10 @@ import (
 
 func (h *Handler) addPublicAPI(rg *gin.RouterGroup) {
 	rg.GET("/status", h.handleGetAll)
-	rg.POST("/status", h.handleGetStatus)
+	rg.POST("/report", h.handleGetReport)
 	rg.POST("/unquarantine", h.handleUnquarantine)
 	rg.POST("/evaluate", h.handleEvaluate)
+	rg.PUT("/comment", h.handlePutComment)
 }
 
 type request struct {
@@ -26,17 +29,17 @@ func (h *Handler) handleGetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, resp)
 }
 
-func (h *Handler) handleGetStatus(ctx *gin.Context) {
+func (h *Handler) handleGetReport(ctx *gin.Context) {
 	var body request
 	if ctx.BindJSON(&body) != nil {
 		return
 	}
 
 	pkg, err := h.service.GetPackage(body.Purl)
-	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
-	} else if pkg == nil {
+	if errors.Is(err, entity.ErrPackageNotFound) {
 		ctx.AbortWithStatus(http.StatusNotFound)
+	} else if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
 	} else {
 		ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
 	}
@@ -67,4 +70,25 @@ func (h *Handler) handleEvaluate(ctx *gin.Context) {
 		return
 	}
 	ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
+}
+
+type requestComment struct {
+	request
+	Comment string `json:"comment" binding:"required"`
+}
+
+func (h *Handler) handlePutComment(ctx *gin.Context) {
+	var body requestComment
+	if ctx.BindJSON(&body) != nil {
+		return
+	}
+
+	err := h.service.ChangeComment(body.Purl, body.Comment)
+	if errors.Is(err, entity.ErrPackageNotFound) {
+		ctx.AbortWithStatus(http.StatusNotFound)
+	} else if err != nil {
+		ctx.AbortWithError(http.StatusInternalServerError, err)
+	} else {
+		ctx.Status(http.StatusOK)
+	}
 }
