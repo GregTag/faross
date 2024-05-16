@@ -60,7 +60,7 @@ func (s *Service) evaluate(purl *packageurl.PackageURL, pathname string) (*entit
 
 	pkg, err := s.storage.Package.GetOrInsertPending(purl.ToString(), pathname)
 	duration := time.Since(pkg.CreatedAt)
-	if err == nil && (pkg.State != entity.Pending || duration < maxPendingDurating) {
+	if err == nil && (pkg.CreatedAt != pkg.UpdatedAt) && (pkg.State != entity.Pending || duration < maxPendingDurating) {
 		if pkg.State == entity.Pending {
 			log.Printf("Package %s is pending with duration %s\n", pkg.Purl, duration)
 			return nil, entity.ErrPending

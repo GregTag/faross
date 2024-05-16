@@ -71,7 +71,11 @@ func (h *Handler) handleEvaluate(ctx *gin.Context) {
 	}
 	pkg, err := h.service.EvaluatePurl(body.Purl)
 	if err != nil {
-		ctx.AbortWithError(http.StatusInternalServerError, err)
+		if errors.Is(err, entity.ErrPending) {
+			ctx.AbortWithStatus(http.StatusAccepted)
+		} else {
+			ctx.AbortWithError(http.StatusInternalServerError, err)
+		}
 		return
 	}
 	ctx.Data(http.StatusOK, "application/json; charset=utf-8", []byte(pkg.Report))
