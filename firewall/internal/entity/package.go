@@ -8,6 +8,7 @@ type State int
 
 const (
 	Undefined State = iota
+	Pending
 	Healthy
 	Quarantined
 	Unquarantined
@@ -25,6 +26,8 @@ type Package struct {
 
 func (s State) ToSring() string {
 	switch s {
+	case Pending:
+		return "pending"
 	case Healthy:
 		return "healthy"
 	case Quarantined:

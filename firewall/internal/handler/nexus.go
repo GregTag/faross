@@ -93,7 +93,6 @@ func (h *Handler) handleGetConfigure(ctx *gin.Context) {
 	sinceStr := ctx.Query("sinceUtcTimestamp")
 
 	repos, err := h.service.GetConfiguredRepositories(instance, sinceStr)
-	log.Printf("Sending repos: %+v\n", repos)
 	if err != nil {
 		ctx.AbortWithError(http.StatusInternalServerError, err)
 		return
