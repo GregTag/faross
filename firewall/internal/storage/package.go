@@ -32,6 +32,16 @@ func (s *PackageStore) GetByPurl(purl string) (*entity.Package, error) {
 	return &entry, err
 }
 
+func (s *PackageStore) GetOrInsertPending(purl, pathname string) (*entity.Package, error) {
+	var entry entity.Package
+	result := s.db.
+		Where(entity.Package{Purl: purl}).
+		Assign(entity.Package{Pathname: pathname}).
+		Attrs(entity.Package{State: entity.Pending}).
+		FirstOrCreate(&entry)
+	return &entry, result.Error
+}
+
 func (s *PackageStore) Unquarantine(purl, comment string) error {
 	result := s.db.Model(&entity.Package{}).
 		Where("purl = ?", purl).
