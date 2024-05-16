@@ -2,6 +2,7 @@ package handler
 
 import (
 	"firewall/internal/service"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,7 +25,12 @@ func (h *Handler) GetRoute() *gin.Engine {
 	h.addPublicAPI(public)
 
 	router.LoadHTMLFiles("templates/table.html")
-	router.GET("/", h.handleHome)
+	router.GET("/old", h.handleHome)
+
+	router.GET("/", func(c *gin.Context) {
+		c.Redirect(http.StatusMovedPermanently, "/f")
+	})
+	router.Static("/f", "./static")
 
 	return router
 }

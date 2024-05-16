@@ -13,30 +13,27 @@ import (
 )
 
 func InitGatherLaunch(instrumentsPath string) error {
+	// Init function, must be called once before calling Scan
 	err := util.InitTools(instrumentsPath)
 	if err != nil {
 		return err
 	}
 	images := util.GetAllImages()
-	for _, image := range images {
-		util.PullDockerImage(image)
+	var wg sync.WaitGroup
+	for _, toolImage := range images {
+		wg.Add(1)
+		go func(toolImage string) {
+			defer wg.Done()
+			util.PullDockerImage(toolImage)
+		}(toolImage)
 	}
+	wg.Wait()
 	return nil
 }
 
-func PullImages(images map[string]string) {
-	var wg sync.WaitGroup
-	for toolName, toolImage := range images {
-		wg.Add(1)
-		go func(toolName string, toolImage string) {
-			defer wg.Done()
-			util.PullDockerImage(toolImage)
-		}(toolName, toolImage)
-	}
-	wg.Wait()
-}
-
 func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
+	// Scan the package with all the tools in instruments
+	// Returns map[string]any, a score for the proper package
 	pkgInfo := util.ParsePurl(purl)
 
 	toolsImageMapping, err := util.SelectTools(pkgInfo.Type)
@@ -76,7 +73,6 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 			}
 			containerOutputs = append(containerOutputs, respRaw)
 
-			// TODO: replace raw output with writing into a file/storing into smwh and implement parsers for every tool
 			log.Printf("Output for the tool %s:\n%s\n", toolName, string(resp))
 		}
 	}

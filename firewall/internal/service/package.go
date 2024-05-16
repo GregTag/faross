@@ -5,9 +5,11 @@ import (
 	"errors"
 	"faross/gatherlaunch"
 	"firewall/internal/entity"
+	"firewall/pkg/config"
 	"firewall/pkg/parsers"
 	"log"
 	"sync"
+	"time"
 
 	"github.com/package-url/packageurl-go"
 )
@@ -18,7 +20,7 @@ type EvalDataRequest struct {
 	Hash     string `json:"hash"`
 }
 
-func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Package, error) {
+func (s *Service) runGatherLaunch(purl *packageurl.PackageURL) (*entity.Package, error) {
 	resp, err := gatherlaunch.Scan(*purl)
 	if err != nil {
 		return nil, err
@@ -49,32 +51,24 @@ func (s *Service) requestEvaluatePurl(purl *packageurl.PackageURL) (*entity.Pack
 	return &result, nil
 }
 
-func (s *Service) EvaluatePurl(purlStr string) (*entity.Package, error) {
-	purl, err := packageurl.FromString(purlStr)
-	if err != nil {
-		return nil, err
+var maxPendingDurating time.Duration
+
+func (s *Service) evaluate(purl *packageurl.PackageURL, pathname string) (*entity.Package, error) {
+	if maxPendingDurating == 0 {
+		maxPendingDurating = config.Koanf.Duration("maxPendingDuration")
 	}
 
-	pkg, err := s.requestEvaluatePurl(&purl)
-	if err != nil {
-		return nil, err
+	pkg, err := s.storage.Package.GetOrInsertPending(purl.ToString(), pathname)
+	duration := time.Since(pkg.CreatedAt)
+	if err == nil && (pkg.CreatedAt != pkg.UpdatedAt) && (pkg.State != entity.Pending || duration < maxPendingDurating) {
+		if pkg.State == entity.Pending {
+			log.Printf("Package %s is pending with duration %s\n", pkg.Purl, duration)
+			return nil, entity.ErrPending
+		}
+		return pkg, nil
 	}
 
-	err = s.storage.Package.Save(pkg)
-	if err != nil {
-		return nil, err
-	}
-
-	return pkg, nil
-}
-
-func (s *Service) EvaluatePathname(format, pathname string) (*entity.Package, error) {
-	purl, err := parsers.PathnameToPurl(format, pathname)
-	if err != nil {
-		return nil, err
-	}
-
-	pkg, err := s.requestEvaluatePurl(purl)
+	pkg, err = s.runGatherLaunch(purl)
 	if err != nil {
 		return nil, err
 	}
@@ -86,6 +80,24 @@ func (s *Service) EvaluatePathname(format, pathname string) (*entity.Package, er
 	}
 
 	return pkg, nil
+}
+
+func (s *Service) EvaluatePurl(purlStr string) (*entity.Package, error) {
+	purl, err := packageurl.FromString(purlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.evaluate(&purl, "")
+}
+
+func (s *Service) EvaluatePathname(format, pathname string) (*entity.Package, error) {
+	purl, err := parsers.PathnameToPurl(format, pathname)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.evaluate(purl, pathname)
 }
 
 type runResult struct {
@@ -170,8 +182,8 @@ func (s *Service) EvalRequest(instance, name string, components []EvalDataReques
 	return evalResults, nil
 }
 
-func (s *Service) Unquarantine(purl string) error {
-	err := s.storage.Package.Unquarantine(purl)
+func (s *Service) Unquarantine(purl, comment string) error {
+	err := s.storage.Package.Unquarantine(purl, comment)
 	if err != nil {
 		log.Println("Error in unqarantine: ", err)
 	}
@@ -179,7 +191,21 @@ func (s *Service) Unquarantine(purl string) error {
 }
 
 func (s *Service) GetPackage(purl string) (*entity.Package, error) {
-	return s.storage.Package.TryGetByPurl(purl)
+	return s.storage.Package.GetByPurl(purl)
+}
+
+func preparePackages(pkgs []entity.Package) []map[string]any {
+	prepared := make([]map[string]any, 0, len(pkgs))
+	for _, pkg := range pkgs {
+		prepared = append(prepared, map[string]any{
+			"purl":       pkg.Purl,
+			"state":      pkg.State.ToSring(),
+			"score":      pkg.FinalScore,
+			"comment":    pkg.Comment,
+			"changed_at": pkg.UpdatedAt,
+		})
+	}
+	return prepared
 }
 
 func (s *Service) GetAll() ([]map[string]any, error) {
@@ -187,12 +213,9 @@ func (s *Service) GetAll() ([]map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	response := make([]map[string]any, 0, len(pkgs))
-	for _, pkg := range pkgs {
-		response = append(response, map[string]any{
-			"purl":  pkg.Purl,
-			"state": pkg.State,
-		})
-	}
-	return response, nil
+	return preparePackages(pkgs), nil
+}
+
+func (s *Service) ChangeComment(purl, comment string) error {
+	return s.storage.Package.UpdateComment(purl, comment)
 }

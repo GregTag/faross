@@ -3,7 +3,6 @@ package storage
 import (
 	"errors"
 	"firewall/internal/entity"
-	"fmt"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -24,25 +23,35 @@ func (s *PackageStore) Save(pkg *entity.Package) error {
 	}).Create(pkg).Error
 }
 
-func (s *PackageStore) TryGetByPurl(purl string) (*entity.Package, error) {
+func (s *PackageStore) GetByPurl(purl string) (*entity.Package, error) {
 	var entry entity.Package
 	err := s.db.Model(&entity.Package{}).Where("purl = ?", purl).Take(&entry).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return nil, nil
+		return nil, entity.ErrPackageNotFound
 	}
 	return &entry, err
 }
 
-func (s *PackageStore) Unquarantine(purl string) error {
+func (s *PackageStore) GetOrInsertPending(purl, pathname string) (*entity.Package, error) {
+	var entry entity.Package
+	result := s.db.
+		Where(entity.Package{Purl: purl}).
+		Assign(entity.Package{Pathname: pathname}).
+		Attrs(entity.Package{State: entity.Pending}).
+		FirstOrCreate(&entry)
+	return &entry, result.Error
+}
+
+func (s *PackageStore) Unquarantine(purl, comment string) error {
 	result := s.db.Model(&entity.Package{}).
 		Where("purl = ?", purl).
 		Where("state = ?", entity.Quarantined).
-		Update("state", entity.Unquarantined)
+		Updates(entity.Package{State: entity.Unquarantined, Comment: comment})
 	if result.Error != nil {
 		return result.Error
 	}
 	if result.RowsAffected == 0 {
-		return fmt.Errorf("no package unquarantined")
+		return entity.ErrNothingUnquarantined
 	}
 	return nil
 }
@@ -51,4 +60,15 @@ func (s *PackageStore) GetAll() ([]entity.Package, error) {
 	var entries []entity.Package
 	err := s.db.Find(&entries).Error
 	return entries, err
+}
+
+func (s *PackageStore) UpdateComment(purl, comment string) error {
+	result := s.db.Model(&entity.Package{}).Where("purl = ?", purl).Update("comment", comment)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return entity.ErrPackageNotFound
+	}
+	return nil
 }

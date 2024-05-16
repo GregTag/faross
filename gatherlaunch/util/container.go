@@ -55,7 +55,6 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr ToolResponse) {
 	log.Printf("Started processing with the tool %s\n", toolName)
 	ctx := context.Background()
-	containerName := "faross-" + toolName
 	containerCmd, err := getContainerCmd(toolName, pkgInfo)
 	if err != nil {
 		log.Println("Failed to get container cmd")
@@ -80,7 +79,7 @@ func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr Tool
 		&container.HostConfig{},
 		&network.NetworkingConfig{},
 		&v1.Platform{},
-		containerName,
+		"",
 	)
 	if err != nil {
 		log.Printf("Failed to create the container for the tool %s\n", toolName)

@@ -1,5 +1,6 @@
 instrumentsPath: "instruments.json"
 address: "0.0.0.0:5002"
+maxPendingDuration: 1m
 quarantineMessage: "This package is blocked by Faross system. Contact the Information Security Department for more details"
 dbDriver: "sqlite"
 dbCreds: "fire.db"

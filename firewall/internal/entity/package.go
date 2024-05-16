@@ -8,6 +8,7 @@ type State int
 
 const (
 	Undefined State = iota
+	Pending
 	Healthy
 	Quarantined
 	Unquarantined
@@ -20,10 +21,13 @@ type Package struct {
 	State      State
 	FinalScore float64
 	Report     string
+	Comment    string
 }
 
 func (s State) ToSring() string {
 	switch s {
+	case Pending:
+		return "pending"
 	case Healthy:
 		return "healthy"
 	case Quarantined:
