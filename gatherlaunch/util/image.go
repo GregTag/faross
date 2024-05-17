@@ -18,6 +18,7 @@ func GetAllImages() []string {
 		"imarenf/packj-trace:1.0",
 		"imarenf/decision-making:1.0",
 		"imarenf/deps.dev:1.0",
+		"imarenf/ossgadget:1.3",
 	}
 }
 
