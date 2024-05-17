@@ -1,0 +1,8 @@
+instrumentsPath: "instruments.json"
+address: "0.0.0.0:5002"
+maxPendingDuration: 1m
+quarantineMessage: "This package is blocked by Faross system. Contact the Information Security Department for more details"
+dbDriver: "sqlite"
+dbCreds: "fire.db"
+# dbDriver: "postgresql"
+# dbCreds: "user=postgres password=postgres dbname=postgres host=localhost port=5432 sslmode=disable"

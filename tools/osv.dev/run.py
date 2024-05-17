@@ -65,6 +65,16 @@ def getScore(count: int) -> int:
     }[True]
 
 
+def getRisk(score: int) -> str:
+    return {
+        score == 10: "No risk",
+        8 <= score < 10: "Low",
+        5 <= score < 8: "Medium",
+        1 <= score < 5: "High",
+        score == 0: "Critical",
+    }[True]
+
+
 if __name__ == "__main__":
     score = 10
     description = "No vulnerabilities have been detected or such PURL doesn't exist."
@@ -88,11 +98,12 @@ if __name__ == "__main__":
         description = str(e)
         sys.exit(1)
     finally:
+        risk = getRisk(score)
         report = [
             {
                 "checkName": "CVE-check",
                 "score": score,
-                "risk": "medium",
+                "risk": risk,
                 "description": description,
             }
         ]
