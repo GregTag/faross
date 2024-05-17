@@ -131,10 +131,9 @@ func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr Tool
 	tr.RespCh <- containerOutput
 }
 
-func RunDecisionMaking(inputFile string) (Decision, error) {
+func RunDecisionMaking(inputDir string) (Decision, error) {
 	// TODO: write 1 function to launch the container and call it from RunDecisionMaking and RunDockerContainer
 	ctx := context.Background()
-	containerName := "faross-decision-making"
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		log.Println("Failed to create new docker client")
@@ -151,14 +150,14 @@ func RunDecisionMaking(inputFile string) (Decision, error) {
 			Mounts: []mount.Mount{
 				{
 					Type:   mount.TypeBind,
-					Source: "/tmp",
+					Source: inputDir,
 					Target: "/usr/src/app/input",
 				},
 			},
 		},
 		&network.NetworkingConfig{},
 		&v1.Platform{},
-		containerName,
+		"",
 	)
 	if err != nil {
 		log.Printf("Failed to create the container for decision-making: %s\n", err.Error())

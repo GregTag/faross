@@ -51,7 +51,7 @@ def getDanderousVulnsCount(vulns: list) -> tuple[int, int]:
 
 def getScore(count: int) -> int:
     return {
-        count > 100: 0,
+        count >= 100: 0,
         75 <= count < 100: 1,
         55 <= count < 75: 2,
         35 <= count < 55: 3,
@@ -92,7 +92,11 @@ if __name__ == "__main__":
             {
                 "checkName": "CVE-check",
                 "score": score,
+<<<<<<< HEAD
                 "risk": "medium",
+=======
+                "risk": "Medium",
+>>>>>>> 9f7f0e8 ([DAS-136] modified deps.dev script for toxic-repos)
                 "description": description,
             }
         ]
