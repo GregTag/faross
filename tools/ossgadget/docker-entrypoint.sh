@@ -29,10 +29,6 @@ else
     subtr=$(( total_weight / base_weigh - 1))
     unbounded_score=$((start_score - subtr))
     score=$(( unbounded_score < 0 ? 0 : unbounded_score ))
-    echo "start" $start_score
-    echo "base weight:" $base_weigh
-    echo "total weight:" $total_weight
-    echo "subtr:" $subtr
 fi
 
 desc="Uses regular expressions to identify backdoors"
