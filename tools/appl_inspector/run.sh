@@ -10,7 +10,7 @@ error_exit()
 if [ -z "$1" ]; then 
     error_exit "Pass path to directory to analyze as a first parameter"
 fi
-if [ ! -d $1 ]; then
+if [ ! -f $1 ] && [ ! -d $1 ]; then
     error_exit "Source directory does not exist"
 fi
 
