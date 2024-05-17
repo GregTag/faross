@@ -2,6 +2,7 @@ import sys
 import requests
 import json
 import cvss
+import cvss
 
 
 def getResponse(url: str, data: str) -> dict[str]:
@@ -16,8 +17,22 @@ def getResponse(url: str, data: str) -> dict[str]:
             Response status code: {response.status_code}
             Error: {error_message}"""
         )
+        error_message = response.json()["message"]
+        raise Exception(
+            f"""An error occured while fetching data from {url} 
+            Response status code: {response.status_code}
+            Error: {error_message}"""
+        )
 
 
+def getDanderousVulnsCount(vulns: list) -> tuple[int, int]:
+    CVSS_CALCULATOR = {
+        "CVSS_V2": cvss.CVSS2,
+        "CVSS_V3": cvss.CVSS3,
+        "CVSS_V4": cvss.CVSS4,
+    }
+
+    high_cnt, critical_cnt = 0, 0
 def getDanderousVulnsCount(vulns: list) -> tuple[int, int]:
     CVSS_CALCULATOR = {
         "CVSS_V2": cvss.CVSS2,
@@ -75,6 +90,8 @@ if __name__ == "__main__":
 
         request_body = f'{{"package": {{"purl": "{purl}"}}}}'
         response = getResponse(url=base_url, data=request_body)
+        request_body = f'{{"package": {{"purl": "{purl}"}}}}'
+        response = getResponse(url=base_url, data=request_body)
 
         if response:
             high_cnt, critical_cnt = getDanderousVulnsCount(response["vulns"])
@@ -97,4 +114,5 @@ if __name__ == "__main__":
             }
         ]
 
+        json.dump(report, sys.stdout)
         json.dump(report, sys.stdout)

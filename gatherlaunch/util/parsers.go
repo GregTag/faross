@@ -3,7 +3,7 @@ package util
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/package-url/packageurl-go"
 )
@@ -20,19 +20,33 @@ func ParsePurl(purl packageurl.PackageURL) PackageInfo {
 }
 
 type Parser interface {
-	Parse(ContainerOutput) ([]byte, error)
+	Parse(ContainerOutput) (ContainerOutput, error)
 }
 
 type DefaultParser struct {
 }
 
-func (dp DefaultParser) Parse(respRaw ContainerOutput) ([]byte, error) {
-	resp, err := json.Marshal(respRaw)
-	if err != nil {
-		log.Printf("Failed to parse container output: %s", err.Error())
-		return nil, err
+func (dp DefaultParser) Parse(respRaw ContainerOutput) (ContainerOutput, error) {
+	return respRaw, nil
+}
+
+type PowershellOutputParser struct {
+}
+
+func (dp PowershellOutputParser) Parse(respRaw ContainerOutput) (ContainerOutput, error) {
+	output := "{" + strings.Split(respRaw.Output, "{")[1]
+	output = strings.Split(output, "}")[0] + "}"
+	r := ContainerOutput{
+		ToolName: respRaw.ToolName,
+		ExitCode: respRaw.ExitCode,
+		Output:   output,
 	}
-	return resp, nil
+	return r, nil
+}
+
+func RespToString(out ContainerOutput) []byte {
+	resp, _ := json.Marshal(out)
+	return resp
 }
 
 func GetParser(toolName string) (Parser, error) {
@@ -47,6 +61,8 @@ func GetParser(toolName string) (Parser, error) {
 		return DefaultParser{}, nil
 	case "toxic-repos":
 		return DefaultParser{}, nil
+	case "ossgadget":
+		return PowershellOutputParser{}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}

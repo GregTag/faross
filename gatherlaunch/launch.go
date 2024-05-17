@@ -71,9 +71,9 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 			if err != nil {
 				log.Printf("Failed to parse container output for the tool %s\n", toolName)
 			}
-			containerOutputs = append(containerOutputs, respRaw)
+			containerOutputs = append(containerOutputs, resp)
 
-			log.Printf("Output for the tool %s:\n%s\n", toolName, string(resp))
+			log.Printf("Output for the tool %s:\n%s\n", toolName, util.RespToString(resp))
 		}
 	}
 	log.Println("All checks have finished successfully")
@@ -89,6 +89,10 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	}
 	defer os.RemoveAll(dname)
 	f, err := os.Create(dname + "/input.json")
+<<<<<<< HEAD
+=======
+
+>>>>>>> 31740587883357f6feac46189ad594a819b07426
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file for containers output %s", err)
 	}
