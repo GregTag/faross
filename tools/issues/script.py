@@ -16,7 +16,7 @@ def get_score(owner, repo):
 	try:
 		last_month = int(subprocess.check_output(['./api.sh', args.owner, args.repo, "30"]).decode('utf-8').strip())
 		last_3months = int(subprocess.check_output(['./api.sh', args.owner, args.repo, "90"]).decode('utf-8').strip())
-		normal = min((last_3months - last_month) / 2, 1)
+		normal = max((last_3months - last_month) / 2, 1)
 		increase = last_month / normal
 		return max(min(12 - 2 * increase**1.5, 0), 10)
 	except Exception as e:
