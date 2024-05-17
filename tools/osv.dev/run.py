@@ -92,11 +92,7 @@ if __name__ == "__main__":
             {
                 "checkName": "CVE-check",
                 "score": score,
-<<<<<<< HEAD
-                "risk": "medium",
-=======
                 "risk": "Medium",
->>>>>>> 9f7f0e8 ([DAS-136] modified deps.dev script for toxic-repos)
                 "description": description,
             }
         ]
