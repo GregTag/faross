@@ -8,24 +8,24 @@ STATIC_TOOLS = ["osv.dev", "toxic-repos", "packj-static"]
 DYNAMIC_TOOLS = ["packj-trace"]
 
 
-def process_part(data: dict, tag: str) -> Tuple[List[Any], List[Any]]:
-    results = data.get(tag, None)
-    if not results:
-        return [], []
+def process_part(data: dict, tag: str) -> Tuple[List[Any], List[Any], List[Any]]:
+    results = data.get(tag, {})
     scores = []
     risks = []
+    scores_info = []
     tools = DYNAMIC_TOOLS if tag == "dynamic_analysis" else STATIC_TOOLS
     for tool in tools:
-        res = results.get(tool).get("result")
-        if not res:
-            continue
-        scores.append(res.get("score"))
-        risks.append(res.get("risk").lower())
-    return scores, risks
+        res = results.get(tool, {}).get("result", {})
+        score = res.get("score")
+        if score is not None:
+            scores.append(score)
+            risks.append(res.get("risk", "").lower())
+            scores_info.append(res)
+    return scores, risks, scores_info
 
 
-def parse_json_file(input_file: str):
-    weighted_scores = []
+def parse_json_file(input_file: str) -> Tuple[float, List[Any]]:
+    weighted_scores: List[Tuple[int, Any]] = []  # по каждой взвешенной оценке хранит мета-информацию
     total_weights = []
     has_critical = False
 
@@ -33,40 +33,37 @@ def parse_json_file(input_file: str):
 
     with open(input_file, "r") as file:
         data = json.load(file)
-        scores_static, risks_static = process_part(data, "static_analysis")
-        scores_dynamic, risks_dynamic = process_part(data, "dynamic_analysis")
+        scores_static, risks_static, scores_info_static = process_part(data, "static_analysis")
+        scores_dynamic, risks_dynamic, scores_info_dynamic = process_part(data, "dynamic_analysis")
 
-    # TODO: replace with proper function
     scores_static.extend(scores_dynamic)
     risks_static.extend(risks_dynamic)
+    scores_info_static.extend(scores_info_dynamic)
 
-    for score, risk in zip(scores_static, risks_static):
-        if risk.lower() == "critical" and score > 0:
+    for score, risk, info in zip(scores_static, risks_static, scores_info_static):
+        if risk.lower() == "critical" and score == 0:
             has_critical = True
-            break
         weight = risk_weight.get(risk.lower(), 1)
         weighted_score = score * weight
-        weighted_scores.append(weighted_score)
+        weighted_scores.append((weighted_score, info))
         total_weights.append(weight)
 
-    if has_critical:
-        return 0
-
     if weighted_scores:
-        average_score = sum(weighted_scores) / sum(total_weights)
-        normalized_score = (average_score / max(total_weights)) * 10
-        return min(normalized_score, 10)
+        if has_critical:
+            average_score = 0
+        else:
+            average_score = sum(weighted_score for weighted_score, _ in weighted_scores) / sum(total_weights)
+        impactful_scores = [score_info for _, score_info in sorted(weighted_scores, key=lambda x: -x[0])][:5]
+        return min(average_score, 10), impactful_scores
 
-    return None
+    return 0, []  # If all scores failed to parse, we do not approve
 
 
-def calculate_decision(score):
-    if score is None:
-        return {"score": 10, "is_quarantined": True}
-    decision: bool = score > 6
-    return {"score": score, "is_quarantined": decision}
+def calculate_decision(score, impactful_scores):
+    decision: bool = score < 6
+    return {"score": score, "is_quarantined": decision, "impactful_scores": impactful_scores}
 
 
 if __name__ == "__main__":
-    aggregate_score = parse_json_file("/usr/src/app/input/input.json")
-    json.dump(calculate_decision(aggregate_score), sys.stdout)
+    aggregate_score, impact_scores = parse_json_file("/usr/src/app/input/input.json")
+    json.dump(calculate_decision(aggregate_score, impact_scores), sys.stdout)
