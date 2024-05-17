@@ -89,10 +89,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	}
 	defer os.RemoveAll(dname)
 	f, err := os.Create(dname + "/input.json")
-<<<<<<< HEAD
-=======
 
->>>>>>> 31740587883357f6feac46189ad594a819b07426
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file for containers output %s", err)
 	}
