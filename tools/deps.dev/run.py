@@ -57,6 +57,7 @@ if __name__ == "__main__":
         purl = sys.argv[1]
         base_url = "https://api.deps.dev"
 
+        # Attention: The alpha version of API is used
         purl_lookup_url = base_url + "/v3alpha/purl/" + quote(purl, safe="")
         system, name, version = getPathParameters(purl_lookup_url)
 
