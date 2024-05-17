@@ -47,6 +47,8 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 		return []string{pkgInfo.Purl}, nil
 	case "toxic-repos":
 		return []string{pkgInfo.Purl}, nil
+	case "ossgadget":
+		return []string{pkgInfo.Purl}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
