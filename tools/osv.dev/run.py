@@ -51,7 +51,7 @@ def getDanderousVulnsCount(vulns: list) -> tuple[int, int]:
 
 def getScore(count: int) -> int:
     return {
-        count > 100: 0,
+        count >= 100: 0,
         75 <= count < 100: 1,
         55 <= count < 75: 2,
         35 <= count < 55: 3,
@@ -62,16 +62,6 @@ def getScore(count: int) -> int:
         3 <= count < 5: 8,
         2 <= count < 3: 9,
         count < 2: 10,
-    }[True]
-
-
-def getRisk(score: int) -> str:
-    return {
-        score == 10: "No risk",
-        8 <= score < 10: "Low",
-        5 <= score < 8: "Medium",
-        1 <= score < 5: "High",
-        score == 0: "Critical",
     }[True]
 
 
@@ -90,20 +80,19 @@ if __name__ == "__main__":
             high_cnt, critical_cnt = getDanderousVulnsCount(response["vulns"])
             score = getScore(high_cnt + critical_cnt * 2)
             description = (
-                f"Detected {high_cnt} vulnerability (-ies) with HIGH severity"
-                f" and {critical_cnt} vulnerability (-ies) with CRITICAL severity."
+                f"Detected {critical_cnt} vulnerability (-ies) with CRITICAL severity"
+                f" and {high_cnt} vulnerability (-ies) with HIGH severity."
             )
     except Exception as e:
         score = "?"
         description = str(e)
         sys.exit(1)
     finally:
-        risk = getRisk(score)
         report = [
             {
                 "checkName": "CVE-check",
                 "score": score,
-                "risk": risk,
+                "risk": "Medium",
                 "description": description,
             }
         ]

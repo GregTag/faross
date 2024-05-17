@@ -1,27 +1,75 @@
 import sys
 import requests
+import json
 from urllib.parse import quote
 
 
-def getResponse(url: str) -> None:
+def getPathParameters(url: str) -> tuple[str, str, str]:
     response = requests.get(url)
 
     if response.status_code == 200:
-        print(response.text)
+        version_key = response.json()["version"]["versionKey"]
+        return version_key["system"], version_key["name"], version_key["version"]
     else:
-        sys.stderr.write(f"An error occured while fetching data from api.deps.dev\n"
-                         f"Response status code: {response.status_code}\nError:\n{response.text}\n")
-        sys.exit(1)
+        error_message = response.text
+        raise Exception(
+            f"""An error occured while fetching data from {url} 
+            Response status code: {response.status_code}
+            Error: {error_message}"""
+        )
+
+
+def checkErrors(error_message: str) -> None:
+    if error_message:
+        raise Exception(
+            f"""An internal server error associated with the dependency graph
+            An error here may imply the graph as a whole is incorrect 
+            Error: {error_message}"""
+        )
+
+
+def getDependencies(url: str) -> list[str]:
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        dependency_names = []
+        checkErrors(response.json()["error"])
+        nodes = response.json()["nodes"]
+        for v in nodes:
+            try:
+                checkErrors(v["errors"])
+            except Exception:
+                continue
+            version_key = v["versionKey"]
+            dependency_names.append(version_key["name"])
+        return dependency_names
+    else:
+        error_message = response.text
+        raise Exception(
+            f"""An error occured while fetching data from {url} 
+            Response status code: {response.status_code}
+            Error: {error_message}"""
+        )
 
 
 if __name__ == "__main__":
-    purl = sys.argv[1]
-    percent_encoded_purl = quote(purl, safe='')
+    try:
+        purl = sys.argv[1]
+        base_url = "https://api.deps.dev"
 
-    # Только метод PurlLookup поддерживает запрос через Purl
-    base_purl_lookup_url = "https://api.deps.dev/v3alpha/purl/"
-    # TODO: JSON не соответсвует образцу
-    # TODO: используется alpha версия API
+        # Attention: The alpha version of API is used
+        purl_lookup_url = base_url + "/v3alpha/purl/" + quote(purl, safe="")
+        system, name, version = getPathParameters(purl_lookup_url)
 
-    url = base_purl_lookup_url + percent_encoded_purl
-    getResponse(url)
+        encoded_name = quote(name, safe="")
+        dependencies_url = (
+            base_url
+            + f"/v3/systems/{system}/packages/{encoded_name}/versions/{version}:dependencies"
+        )
+
+        dependency_names = getDependencies(dependencies_url)
+        json.dump(dependency_names, sys.stdout)
+
+    except Exception as e:
+        sys.stderr.write(str(e))
+        sys.exit(1)
