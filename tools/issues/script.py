@@ -20,7 +20,7 @@ def get_score(owner, repo):
 		increase = last_month / normal
 		return max(min(12 - 2 * increase**1.5, 0), 10)
 	except Exception as e:
-		print("Unknown internal error in popularity tool:", e)
+		print("Unknown internal error in issues tool:", e)
 		return 0
 
 

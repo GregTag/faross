@@ -27,7 +27,7 @@ page=1
 while : ; do
     curl "https://api.github.com/repos/$OWNER/$REPO/issues?since=$FROM_DATE&page=$page&state=all" 2> /dev/null > $TEMP_FILE
     received=$(jq length $TEMP_FILE)
-    real_issues=$(jq 'map(select(.pull_request | not)) | length' $TEMP_FILE)
+    real_issues=$(jq 'map(select(.pull_request | not)) | length' $TEMP_FILE) || exit "Internal error, maybe repo was moved permanently"
     ((issues_count+=real_issues))
     ((page++))
     [[ $received > 0 ]] || break
