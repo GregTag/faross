@@ -83,16 +83,20 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 		return nil, fmt.Errorf("failed to parse output template: %s", err)
 	}
 
-	f, err := os.Create("/tmp/input.json")
+	dname, err := os.MkdirTemp("", "faross")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp directory: %s", err)
+	}
+	defer os.RemoveAll(dname)
+	f, err := os.Create(dname + "/input.json")
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file for containers output %s", err)
 	}
-
 	defer f.Close()
 
 	tmpl.Execute(f, containerOutputs)
 
-	decision, err := util.RunDecisionMaking("/tmp/container_output.json")
+	decision, err := util.RunDecisionMaking(dname)
 	if err != nil {
 		return nil, fmt.Errorf("decision-making finished with an error %s", err)
 	}
