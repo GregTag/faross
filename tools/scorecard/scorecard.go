@@ -31,6 +31,13 @@ type ScorecardCheckRisk struct {
 	Risk   string `json:"risk"`
 }
 
+type FinalResult struct {
+	Name  string               `json:"name"`
+	Score int                  `json:"score"`
+	Risk  string               `json:"risk"`
+	Desc  []ScorecardCheckRisk `json:"desc"`
+}
+
 type Repo struct {
 	Name   string `json:"name"`
 	Commit string `json:"commit"`
@@ -91,7 +98,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Step 3: Output the results
 	result, err := getScorecard(platform, org, repo)
 	if err != nil {
 		log.Fatal(err)
@@ -101,13 +107,23 @@ func main() {
 		checkRisk := ScorecardCheckRisk{Name: check.Name, Reason: check.Reason, Score: check.Score, Risk: RiskLevelMap[check.Name]}
 		resultWithRisks = append(resultWithRisks, checkRisk)
 	}
-	resultJSON, err := json.Marshal(resultWithRisks)
-	if err != nil {
-		fmt.Println("Error:", err)
-		return
+	RiskWeights := map[string]int{
+		"Low":      1,
+		"Medium":   2,
+		"High":     3,
+		"Critical": 4,
 	}
+	totalScore := 0
+	totalWeight := 0
+	for _, checkRisk := range resultWithRisks {
+		weight := RiskWeights[checkRisk.Risk]
+		totalScore += checkRisk.Score * weight
+		totalWeight += weight
+	}
+	averageScore := totalScore / totalWeight
 
-	// Print the JSON
+	finalRes := FinalResult{Name: "scorecard", Risk: "medium", Score: averageScore, Desc: resultWithRisks}
+	resultJSON, err := json.Marshal(finalRes)
 	fmt.Println(string(resultJSON))
 }
 
