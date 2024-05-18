@@ -4,7 +4,8 @@ import json
 import sys
 import os
 
-STATIC_TOOLS = ["osv.dev", "toxic-repos", "packj-static"]
+STATIC_TOOLS = ["osv.dev", "toxic-repos", "packj-static", "ossgadget", "application-inspector-operations", 
+"application-inspector-filetypes", "scorecard"]
 DYNAMIC_TOOLS = ["packj-trace"]
 
 
@@ -15,9 +16,14 @@ def process_part(data: dict, tag: str) -> Tuple[List[Any], List[Any], List[Any]]
     scores_info = []
     tools = DYNAMIC_TOOLS if tag == "dynamic_analysis" else STATIC_TOOLS
     for tool in tools:
+        exit_code = int(results.get(tool, {}).get("exit_code", 1))
+        if exit_code != 0:
+            continue
         res = results.get(tool, {}).get("result", {})
+        if not isinstance(res, dict):
+            continue
         score = res.get("score")
-        if score is not None:
+        if score is not None and (isinstance(score, int) or isinstance(score, float)):
             scores.append(score)
             risks.append(res.get("risk", "").lower())
             scores_info.append(res)
@@ -41,7 +47,7 @@ def parse_json_file(input_file: str) -> Tuple[float, List[Any]]:
     scores_info_static.extend(scores_info_dynamic)
 
     for score, risk, info in zip(scores_static, risks_static, scores_info_static):
-        if risk.lower() == "critical" and score == 0:
+        if score == 0:
             has_critical = True
         weight = risk_weight.get(risk.lower(), 1)
         weighted_score = score * weight
