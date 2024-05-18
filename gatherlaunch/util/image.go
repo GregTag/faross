@@ -11,14 +11,15 @@ import (
 
 func GetAllImages() []string {
 	return []string{
-		"imarenf/osv.dev:1.1",
+		"imarenf/osv.dev:1.3",
 		"imarenf/toxic-repos:1.1",
 		"imarenf/govulncheck:1.0",
 		"imarenf/packj-static:1.0",
-		"imarenf/packj-trace:1.0",
-		"imarenf/decision-making:1.0",
+		"imarenf/packj-trace:1.1",
+		"imarenf/decision-making:1.2",
 		"imarenf/deps.dev:1.0",
 		"imarenf/ossgadget:1.3",
+		"imarenf/appinspector:1.2",
 	}
 }
 

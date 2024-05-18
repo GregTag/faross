@@ -20,20 +20,20 @@ func ParsePurl(purl packageurl.PackageURL) PackageInfo {
 }
 
 type Parser interface {
-	Parse(ContainerOutput) (ContainerOutput, error)
+	Parse(ContainerOutput) ([]ContainerOutput, error)
 }
 
 type DefaultParser struct {
 }
 
-func (dp DefaultParser) Parse(respRaw ContainerOutput) (ContainerOutput, error) {
-	return respRaw, nil
+func (dp DefaultParser) Parse(respRaw ContainerOutput) ([]ContainerOutput, error) {
+	return []ContainerOutput{respRaw}, nil
 }
 
-type PowershellOutputParser struct {
+type OssgadgetOutputParser struct {
 }
 
-func (dp PowershellOutputParser) Parse(respRaw ContainerOutput) (ContainerOutput, error) {
+func (op OssgadgetOutputParser) Parse(respRaw ContainerOutput) ([]ContainerOutput, error) {
 	output := "{" + strings.Split(respRaw.Output, "{")[1]
 	output = strings.Split(output, "}")[0] + "}"
 	r := ContainerOutput{
@@ -41,10 +41,30 @@ func (dp PowershellOutputParser) Parse(respRaw ContainerOutput) (ContainerOutput
 		ExitCode: respRaw.ExitCode,
 		Output:   output,
 	}
-	return r, nil
+	return []ContainerOutput{r}, nil
 }
 
-func RespToString(out ContainerOutput) []byte {
+type AppInspectorParser struct {
+}
+
+func (ap AppInspectorParser) Parse(respRaw ContainerOutput) ([]ContainerOutput, error) {
+	unsafeOperations, fileTypes := strings.Split(respRaw.Output, "\r\n")[0], strings.Split(respRaw.Output, "\r\n")[1]
+
+	r1 := ContainerOutput{
+		ToolName: respRaw.ToolName + "-operations",
+		ExitCode: respRaw.ExitCode,
+		Output:   unsafeOperations,
+	}
+	r2 := ContainerOutput{
+		ToolName: respRaw.ToolName + "-filetypes",
+		ExitCode: respRaw.ExitCode,
+		Output:   fileTypes,
+	}
+	res := []ContainerOutput{r1, r2}
+	return res, nil
+}
+
+func RespToString(out []ContainerOutput) []byte {
 	resp, _ := json.Marshal(out)
 	return resp
 }
@@ -62,7 +82,9 @@ func GetParser(toolName string) (Parser, error) {
 	case "toxic-repos":
 		return DefaultParser{}, nil
 	case "ossgadget":
-		return PowershellOutputParser{}, nil
+		return OssgadgetOutputParser{}, nil
+	case "application-inspector":
+		return AppInspectorParser{}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}

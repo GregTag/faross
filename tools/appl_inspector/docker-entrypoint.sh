@@ -31,7 +31,7 @@ rm $TAGS_FILE
 
 name="Unsafe operations"
 desc="Uses regular expressions to identify potentially dangerous constructs in the code, e.g. network connection or dynamic execution"
-OUPUT+=("{\"$name\": {\"score\": $score, \"risk\": \"medium\", \"desc\": \"$desc\"}}")
+OUPUT+=("{\"checkName\": \"$name\", \"score\": $score, \"risk\": \"Medium\", \"description\": \"$desc\"}")
 
 # ------------------ File types ------------------
 
@@ -42,7 +42,7 @@ rm $TYPES_FILE
 
 name="File types"
 desc="Determines the presence of executable file extensions"
-OUPUT+=("{\"$name\": {\"score\": $score, \"risk\": \"high\", \"desc\": \"$desc\"}}")
+OUPUT+=("{\"checkName\": \"$name\", \"score\": $score, \"risk\": \"High\", \"description\": \"$desc\"}")
 
 # ------------------ Clean ------------------
 

@@ -88,13 +88,11 @@ if __name__ == "__main__":
         description = str(e)
         sys.exit(1)
     finally:
-        report = [
-            {
-                "checkName": "CVE-check",
-                "score": score,
-                "risk": "Medium",
-                "description": description,
-            }
-        ]
+        report = {
+            "checkName": "CVE-check",
+            "score": score,
+            "risk": "Medium",
+            "description": description,
+        }
 
         json.dump(report, sys.stdout)
