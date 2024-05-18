@@ -98,7 +98,6 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	defer f.Close()
 
 	tmpl.Execute(f, containerOutputs)
-	tmpl.Execute(os.Stdout, containerOutputs)
 
 	decision, err := util.RunDecisionMaking(dname)
 	if err != nil {
