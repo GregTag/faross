@@ -51,6 +51,8 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 		return []string{pkgInfo.Purl}, nil
 	case "application-inspector":
 		return []string{pkgInfo.Purl}, nil
+	case "scorecard":
+		return []string{pkgInfo.Purl}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
