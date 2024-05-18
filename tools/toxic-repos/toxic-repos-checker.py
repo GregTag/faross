@@ -1,91 +1,92 @@
 import json
-import os
 import requests
 import sys
+import dependencies
 
 
-def get_json(url, filename):
+def get_json(url):
     r = requests.get(url)
     if r.status_code != 200:
-        sys.stderr.write(f'An error occured while fetching the data from toxic-repos\n'
-                         f'Response status code: {r.status_code}\nError: {r.text}\n')
-        sys.exit(1)
+        raise Exception(
+            f"An error occured while fetching the data from toxic-repos\n"
+            f"Response status code: {r.status_code}\nError: {r.text}\n"
+        )
     return r.json()
 
 
-def find_item(data, name):
+def find_items(data, name):
+    items = []
     for item in data:
-        if name.lower() in item['name'].lower() or name.lower() in \
-        item['commit_link'].lower():
-            return item
-    return {}
+        if (
+            name.lower() in item["name"].lower()
+            or name.lower() in item["commit_link"].lower()
+        ):
+            items.append(item)
+    return items
 
 
-def normalize_item(item, name):
-    warning_category = 'WARNING'
-    dangerous_category = 'DANGEROUS'
-    safe_category = 'SAFE'
-
-    problem_categories = {
-        'ip_block': warning_category,
-        'political_slogans': warning_category,
-        'hostile_actions': dangerous_category,
-        'malware': dangerous_category,
-        'ddos': dangerous_category,
-        'broken_assembly': dangerous_category,
-        'none': safe_category
+def normalize_item(item):
+    PROBLEM2RISK = {
+        "ip_block": "Medium",
+        "political_slogans": "Medium",
+        "hostile_actions": "Critical",
+        "malware": "Critical",
+        "ddos": "High",
+        "broken_assembly": "Medium",
     }
 
-    risks = {
-        safe_category: 'Low',
-        warning_category: 'Low',
-        dangerous_category: 'High',
-    }
-    
-    scores = {
-        safe_category: 10,
-        warning_category: 8,
-        dangerous_category: 0,
-    }
-
-    problem_category = problem_categories[item.get('problem_type', 'none')]
+    problem = item["problem_type"]
+    risk = PROBLEM2RISK[problem]
+    description = item["description"]
 
     normalized_item = {
-        'name': name,
-        'description': item.get('description', ''),
-        'problem_type': item.get('problem_type', ''),
-        'problem_category': problem_categories[item.get('problem_type',
-                                                        'none')],
-        'risk': risks[problem_category],
-        'score': scores[problem_category]
+        "description": f"{problem}: {description}",
+        "risk": risk,
     }
 
     return normalized_item
 
 
-def rename_package(name):
-    if name.startswith('pkg:'):
-        start_index = name.find('/') + 1
-        end_index = name.rfind('@')
-        return name[start_index:end_index]
-    return name
+RISK2SCORE = {
+    "Low": 10,
+    "Medium": 8,
+    "High": 5,
+    "Critical": 0,
+    "?": "?",
+}
 
 
-if __name__ == '__main__':
-    url = 'https://raw.githubusercontent.com/toxic-repos/toxic-repos/main/data/json/toxic-repos.json'
-    filename = 'toxic-repos.json'
-    name = sys.argv[1]
-    name = rename_package(name)
+def is_higher(lhs, rhs):
+    return RISK2SCORE[lhs] < RISK2SCORE[rhs]
 
-    data = get_json(url, filename)
-    item = find_item(data, name)
-    result_item = normalize_item(item, name)
 
-    report = {
-        "checkName": "toxic-repos.check",
-        "score": result_item['score'],
-        "risk": result_item['risk'],
-        "description": result_item['problem_type']
-    }
+if __name__ == "__main__":
+    risk, description = "Low", "No problems found"
+    try:
+        url = "https://raw.githubusercontent.com/toxic-repos/toxic-repos/main/data/json/toxic-repos.json"
+        name = sys.argv[1]
 
-    json.dump(report, sys.stdout)
+        data = get_json(url)
+        dependency_names = dependencies.main()
+
+        for name in dependency_names:
+            items = find_items(data, name)
+            for item in items:
+                result_item = normalize_item(item)
+                
+                if is_higher(result_item["risk"], risk):
+                    risk = result_item["risk"]
+                    description = f"{result_item['description']}"
+
+    except Exception as e:
+        risk, description = "?", str(e)
+        sys.exit(1)
+    finally:
+        report = {
+            "checkName": "toxic-repos.check",
+            "score": RISK2SCORE[risk],
+            "risk": risk,
+            "description": description,
+        }
+
+        json.dump(report, sys.stdout)
