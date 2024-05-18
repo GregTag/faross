@@ -76,7 +76,7 @@ if __name__ == "__main__":
                 
                 if is_higher(result_item["risk"], risk):
                     risk = result_item["risk"]
-                    description = f"{result_item['description']}\n"
+                    description = f"{result_item['description']}"
 
     except Exception as e:
         risk, description = "?", str(e)
