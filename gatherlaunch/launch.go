@@ -58,6 +58,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	wg.Wait()
 
 	containerOutputs := []util.ContainerOutput{}
+	var traceResp util.ContainerOutput
 	for toolName, res := range ResultMapping {
 		select {
 		case err = <-res.ErrCh:
@@ -72,12 +73,17 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 				log.Printf("Failed to parse container output for the tool %s\n", toolName)
 			}
 			for _, r := range resp {
-				containerOutputs = append(containerOutputs, r)
+				if r.ToolName == "packj-trace" {
+					traceResp = r
+				} else {
+					containerOutputs = append(containerOutputs, r)
+				}
 			}
 
 			log.Printf("Output for the tool %s:\n%s\n", toolName, util.RespToString(resp))
 		}
 	}
+	containerOutputs = append(containerOutputs, traceResp)
 	log.Println("All checks have finished successfully")
 
 	tmpl, err := template.New("result").Parse(util.OutputTemplate)
@@ -89,7 +95,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %s", err)
 	}
-	defer os.RemoveAll(dname)
+	// defer os.RemoveAll(dname)
 	f, err := os.Create(dname + "/input.json")
 
 	if err != nil {
