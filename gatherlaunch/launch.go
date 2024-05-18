@@ -95,7 +95,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create temp directory: %s", err)
 	}
-	// defer os.RemoveAll(dname)
+	defer os.RemoveAll(dname)
 	f, err := os.Create(dname + "/input.json")
 
 	if err != nil {
