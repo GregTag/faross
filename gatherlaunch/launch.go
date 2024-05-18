@@ -52,7 +52,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 
 		go func(toolName string, toolImage string) {
 			defer wg.Done()
-			util.RunDockerContainer(toolName, toolImage, pkgInfo, ResultMapping[toolName])
+			util.RunCheck(toolName, toolImage, pkgInfo, ResultMapping[toolName])
 		}(toolName, toolImage)
 	}
 	wg.Wait()
@@ -71,7 +71,9 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 			if err != nil {
 				log.Printf("Failed to parse container output for the tool %s\n", toolName)
 			}
-			containerOutputs = append(containerOutputs, resp)
+			for _, r := range resp {
+				containerOutputs = append(containerOutputs, r)
+			}
 
 			log.Printf("Output for the tool %s:\n%s\n", toolName, util.RespToString(resp))
 		}
@@ -96,6 +98,7 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 	defer f.Close()
 
 	tmpl.Execute(f, containerOutputs)
+	tmpl.Execute(os.Stdout, containerOutputs)
 
 	decision, err := util.RunDecisionMaking(dname)
 	if err != nil {

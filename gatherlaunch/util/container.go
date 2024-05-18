@@ -49,12 +49,14 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 		return []string{pkgInfo.Purl}, nil
 	case "ossgadget":
 		return []string{pkgInfo.Purl}, nil
+	case "application-inspector":
+		return []string{pkgInfo.Purl}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
 }
 
-func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr ToolResponse) {
+func RunCheck(toolName, toolImage string, pkgInfo PackageInfo, tr ToolResponse) {
 	log.Printf("Started processing with the tool %s\n", toolName)
 	ctx := context.Background()
 	containerCmd, err := getContainerCmd(toolName, pkgInfo)
@@ -145,7 +147,7 @@ func RunDecisionMaking(inputDir string) (Decision, error) {
 
 	resp, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "imarenf/decision-making:1.0",
+			Image: "imarenf/decision-making:1.2",
 			Tty:   true,
 		},
 		&container.HostConfig{
