@@ -24,9 +24,6 @@ func (h *Handler) GetRoute() *gin.Engine {
 	public := router.Group("/api")
 	h.addPublicAPI(public)
 
-	router.LoadHTMLFiles("templates/table.html")
-	router.GET("/old", h.handleHome)
-
 	router.GET("/", func(c *gin.Context) {
 		c.Redirect(http.StatusMovedPermanently, "/f")
 	})
