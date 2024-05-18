@@ -20,6 +20,7 @@ func GetAllImages() []string {
 		"imarenf/deps.dev:1.0",
 		"imarenf/ossgadget:1.3",
 		"imarenf/appinspector:1.2",
+		"imarenf/scorecard:1.0",
 	}
 }
 

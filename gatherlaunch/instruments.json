@@ -5,7 +5,8 @@
       "ossgadget": "imarenf/ossgadget:1.3",
       "toxic-repos": "imarenf/toxic-repos:1.2",
       "govulncheck": "imarenf/govulncheck:1.0",
-      "application-inspector": "imarenf/appinspector:1.2"
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
       "packj-trace": "imarenf/packj-trace:1.1"
@@ -17,7 +18,8 @@
       "ossgadget": "imarenf/ossgadget:1.3",
       "toxic-repos": "imarenf/toxic-repos:1.2",
       "packj-static": "imarenf/packj-static:1.0",
-      "application-inspector": "imarenf/appinspector:1.2"
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
       "packj-trace": "imarenf/packj-trace:1.1"
@@ -29,7 +31,8 @@
       "ossgadget": "imarenf/ossgadget:1.3",
       "toxic-repos": "imarenf/toxic-repos:1.2",
       "packj-static": "imarenf/packj-static:1.0",
-      "application-inspector": "imarenf/appinspector:1.2"
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
       "packj-trace": "imarenf/packj-trace:1.1"
@@ -41,7 +44,8 @@
       "ossgadget": "imarenf/ossgadget:1.3",
       "toxic-repos": "imarenf/toxic-repos:1.2",
       "packj-static": "imarenf/packj-static:1.0",
-      "application-inspector": "imarenf/appinspector:1.2"
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
       "packj-trace": "imarenf/packj-trace:1.1"

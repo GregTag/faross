@@ -85,6 +85,8 @@ func GetParser(toolName string) (Parser, error) {
 		return OssgadgetOutputParser{}, nil
 	case "application-inspector":
 		return AppInspectorParser{}, nil
+	case "scorecard":
+		return DefaultParser{}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
