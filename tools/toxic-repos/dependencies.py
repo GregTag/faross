@@ -1,6 +1,5 @@
 import sys
 import requests
-import json
 from urllib.parse import quote
 
 
@@ -52,24 +51,18 @@ def getDependencies(url: str) -> list[str]:
         )
 
 
-if __name__ == "__main__":
-    try:
-        purl = sys.argv[1]
-        base_url = "https://api.deps.dev"
+def main() -> list[str]:
+    purl = sys.argv[1]
+    base_url = "https://api.deps.dev"
 
-        # Attention: The alpha version of API is used
-        purl_lookup_url = base_url + "/v3alpha/purl/" + quote(purl, safe="")
-        system, name, version = getPathParameters(purl_lookup_url)
+    # Attention: The alpha version of API is used
+    purl_lookup_url = base_url + "/v3alpha/purl/" + quote(purl, safe="")
+    system, name, version = getPathParameters(purl_lookup_url)
 
-        encoded_name = quote(name, safe="")
-        dependencies_url = (
-            base_url
-            + f"/v3/systems/{system}/packages/{encoded_name}/versions/{version}:dependencies"
-        )
+    encoded_name = quote(name, safe="")
+    dependencies_url = (
+        base_url
+        + f"/v3/systems/{system}/packages/{encoded_name}/versions/{version}:dependencies"
+    )
 
-        dependency_names = getDependencies(dependencies_url)
-        json.dump(dependency_names, sys.stdout)
-
-    except Exception as e:
-        sys.stderr.write(str(e))
-        sys.exit(1)
+    return getDependencies(dependencies_url)

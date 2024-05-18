@@ -52,12 +52,13 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 
 		go func(toolName string, toolImage string) {
 			defer wg.Done()
-			util.RunDockerContainer(toolName, toolImage, pkgInfo, ResultMapping[toolName])
+			util.RunCheck(toolName, toolImage, pkgInfo, ResultMapping[toolName])
 		}(toolName, toolImage)
 	}
 	wg.Wait()
 
 	containerOutputs := []util.ContainerOutput{}
+	var traceResp util.ContainerOutput
 	for toolName, res := range ResultMapping {
 		select {
 		case err = <-res.ErrCh:
@@ -71,11 +72,18 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 			if err != nil {
 				log.Printf("Failed to parse container output for the tool %s\n", toolName)
 			}
-			containerOutputs = append(containerOutputs, respRaw)
+			for _, r := range resp {
+				if r.ToolName == "packj-trace" {
+					traceResp = r
+				} else {
+					containerOutputs = append(containerOutputs, r)
+				}
+			}
 
-			log.Printf("Output for the tool %s:\n%s\n", toolName, string(resp))
+			log.Printf("Output for the tool %s:\n%s\n", toolName, util.RespToString(resp))
 		}
 	}
+	containerOutputs = append(containerOutputs, traceResp)
 	log.Println("All checks have finished successfully")
 
 	tmpl, err := template.New("result").Parse(util.OutputTemplate)
@@ -83,16 +91,21 @@ func Scan(purl packageurl.PackageURL) (*util.Decision, error) {
 		return nil, fmt.Errorf("failed to parse output template: %s", err)
 	}
 
-	f, err := os.Create("/tmp/input.json")
+	dname, err := os.MkdirTemp("", "faross")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp directory: %s", err)
+	}
+	defer os.RemoveAll(dname)
+	f, err := os.Create(dname + "/input.json")
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create file for containers output %s", err)
 	}
-
 	defer f.Close()
 
 	tmpl.Execute(f, containerOutputs)
 
-	decision, err := util.RunDecisionMaking("/tmp/container_output.json")
+	decision, err := util.RunDecisionMaking(dname)
 	if err != nil {
 		return nil, fmt.Errorf("decision-making finished with an error %s", err)
 	}

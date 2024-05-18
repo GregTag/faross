@@ -47,12 +47,18 @@ func getContainerCmd(toolName string, pkgInfo PackageInfo) ([]string, error) {
 		return []string{pkgInfo.Purl}, nil
 	case "toxic-repos":
 		return []string{pkgInfo.Purl}, nil
+	case "ossgadget":
+		return []string{pkgInfo.Purl}, nil
+	case "application-inspector":
+		return []string{pkgInfo.Purl}, nil
+	case "scorecard":
+		return []string{pkgInfo.Purl}, nil
 	default:
 		return nil, fmt.Errorf("unexpected tool name: %s", toolName)
 	}
 }
 
-func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr ToolResponse) {
+func RunCheck(toolName, toolImage string, pkgInfo PackageInfo, tr ToolResponse) {
 	log.Printf("Started processing with the tool %s\n", toolName)
 	ctx := context.Background()
 	containerCmd, err := getContainerCmd(toolName, pkgInfo)
@@ -131,10 +137,9 @@ func RunDockerContainer(toolName, toolImage string, pkgInfo PackageInfo, tr Tool
 	tr.RespCh <- containerOutput
 }
 
-func RunDecisionMaking(inputFile string) (Decision, error) {
+func RunDecisionMaking(inputDir string) (Decision, error) {
 	// TODO: write 1 function to launch the container and call it from RunDecisionMaking and RunDockerContainer
 	ctx := context.Background()
-	containerName := "faross-decision-making"
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		log.Println("Failed to create new docker client")
@@ -144,21 +149,21 @@ func RunDecisionMaking(inputFile string) (Decision, error) {
 
 	resp, err := cli.ContainerCreate(ctx,
 		&container.Config{
-			Image: "imarenf/decision-making:1.0",
+			Image: "imarenf/decision-making:1.3",
 			Tty:   true,
 		},
 		&container.HostConfig{
 			Mounts: []mount.Mount{
 				{
 					Type:   mount.TypeBind,
-					Source: "/tmp",
+					Source: inputDir,
 					Target: "/usr/src/app/input",
 				},
 			},
 		},
 		&network.NetworkingConfig{},
 		&v1.Platform{},
-		containerName,
+		"",
 	)
 	if err != nil {
 		log.Printf("Failed to create the container for decision-making: %s\n", err.Error())

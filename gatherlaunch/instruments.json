@@ -1,42 +1,54 @@
 {
   "go": {
     "static": {
-      "osv.dev": "imarenf/osv.dev:1.1",
-      "toxic-repos": "imarenf/toxic-repos:1.1",
-      "govulncheck": "imarenf/govulncheck:1.0"
+      "osv.dev": "imarenf/osv.dev:1.3",
+      "ossgadget": "imarenf/ossgadget:1.3",
+      "toxic-repos": "imarenf/toxic-repos:1.2",
+      "govulncheck": "imarenf/govulncheck:1.0",
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
-      "packj-trace": "imarenf/packj-trace:1.0"
+      "packj-trace": "imarenf/packj-trace:1.2"
     }
   },
   "maven": {
     "static": {
-      "osv.dev": "imarenf/osv.dev:1.1",
-      "toxic-repos": "imarenf/toxic-repos:1.1",
-      "packj-static": "imarenf/packj-static:1.0"
+      "osv.dev": "imarenf/osv.dev:1.3",
+      "ossgadget": "imarenf/ossgadget:1.3",
+      "toxic-repos": "imarenf/toxic-repos:1.2",
+      "packj-static": "imarenf/packj-static:1.1",
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
-      "packj-trace": "imarenf/packj-trace:1.0"
+      "packj-trace": "imarenf/packj-trace:1.2"
     }
   },
   "npm": {
     "static": {
-      "osv.dev": "imarenf/osv.dev:1.1",
-      "toxic-repos": "imarenf/toxic-repos:1.1",
-      "packj-static": "imarenf/packj-static:1.0"
+      "osv.dev": "imarenf/osv.dev:1.3",
+      "ossgadget": "imarenf/ossgadget:1.3",
+      "toxic-repos": "imarenf/toxic-repos:1.2",
+      "packj-static": "imarenf/packj-static:1.1",
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
-      "packj-trace": "imarenf/packj-trace:1.0"
+      "packj-trace": "imarenf/packj-trace:1.2"
     }
   },
   "pypi": {
     "static": {
-      "osv.dev": "imarenf/osv.dev:1.1",
-      "toxic-repos": "imarenf/toxic-repos:1.1",
-      "packj-static": "imarenf/packj-static:1.0"
+      "osv.dev": "imarenf/osv.dev:1.3",
+      "ossgadget": "imarenf/ossgadget:1.3",
+      "toxic-repos": "imarenf/toxic-repos:1.2",
+      "packj-static": "imarenf/packj-static:1.1",
+      "application-inspector": "imarenf/appinspector:1.2",
+      "scorecard": "imarenf/scorecard:1.0"
     },
     "dynamic": {
-      "packj-trace": "imarenf/packj-trace:1.0"
+      "packj-trace": "imarenf/packj-trace:1.2"
     }
   }
 }

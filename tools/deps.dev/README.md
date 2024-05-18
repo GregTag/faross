@@ -2,5 +2,5 @@
 
 ```sh
 docker build -t depsdev .
-docker run -it --rm depsdev pkg:npm/%40colors/colors@1.5.0
+docker run -it --rm depsdev pkg:golang/github.com/gin-gonic/gin@v1.10.0
 ```
